@@ -77,9 +77,11 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <History />
-                  <span>Interview History</span>
+                <SidebarMenuButton asChild>
+                  <Link to="/interview-history">
+                    <History />
+                    <span>Interview History</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
