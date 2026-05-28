@@ -21,6 +21,9 @@ export function meta() {
 }
 
 export default function Home() {
+  // TODO: Replace with actual Firebase auth state
+  const isLoggedIn = false;
+
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/20">
       {/* Navigation */}
@@ -38,14 +41,29 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/dashboard" className="hidden sm:block text-sm font-medium hover:text-foreground/80">
-              Log in
-            </Link>
-            <Button asChild size="sm" className="rounded-full">
-              <Link to="/start-interview">
-                Start Interview <ArrowRight className="ml-1.5 h-4 w-4" />
-              </Link>
-            </Button>
+            {isLoggedIn ? (
+              <>
+                <Link to="/dashboard" className="hidden sm:block text-sm font-medium hover:text-foreground/80">
+                  Dashboard
+                </Link>
+                <Button asChild size="sm" className="rounded-full">
+                  <Link to="/start-interview">
+                    Start Interview <ArrowRight className="ml-1.5 h-4 w-4" />
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="hidden sm:block text-sm font-medium hover:text-foreground/80">
+                  Log in
+                </Link>
+                <Button asChild size="sm" className="rounded-full">
+                  <Link to="/login">
+                    Sign up
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -65,8 +83,8 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button asChild size="lg" className="rounded-full h-12 px-8 text-base">
-              <Link to="/start-interview">
-                Start your first interview
+              <Link to={isLoggedIn ? "/start-interview" : "/login"}>
+                {isLoggedIn ? "Start your first interview" : "Get Started"}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
@@ -251,8 +269,8 @@ export default function Home() {
               Join thousands of engineers who are practicing smarter, not just harder. Start your first mock interview today for free.
             </p>
             <Button asChild size="lg" className="rounded-full h-12 px-8">
-              <Link to="/start-interview">
-                Get Started Now <ArrowRight className="ml-2 h-5 w-5" />
+              <Link to={isLoggedIn ? "/start-interview" : "/login"}>
+                {isLoggedIn ? "Start Interview Now" : "Get Started Now"} <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
           </div>
