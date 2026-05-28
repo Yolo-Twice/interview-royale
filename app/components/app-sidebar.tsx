@@ -63,9 +63,11 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <Play />
-                  <span>Start Interview</span>
+                <SidebarMenuButton asChild>
+                  <Link to="/start-interview">
+                    <Play />
+                    <span>Start Interview</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
