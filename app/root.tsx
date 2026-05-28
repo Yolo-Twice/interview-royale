@@ -9,12 +9,6 @@ import {
 
 import type { Route } from "./+types/root"
 import "./app.css"
-import {
-  SidebarProvider,
-  SidebarInset,
-  SidebarTrigger,
-} from "~/components/ui/sidebar"
-import { AppSidebar } from "~/components/app-sidebar"
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -35,17 +29,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-        </header>
-        <Outlet />
-      </SidebarInset>
-    </SidebarProvider>
-  )
+  return <Outlet />
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
