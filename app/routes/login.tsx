@@ -1,41 +1,139 @@
-import { useState } from "react";
-import { Link } from "react-router";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Separator } from "~/components/ui/separator";
+import { useEffect, useState } from "react"
+import { Link, useNavigate } from "react-router"
+
+import { useAuth } from "~/contexts/auth-provider"
+import { Button } from "~/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card"
+import { Input } from "~/components/ui/input"
+import { Label } from "~/components/ui/label"
+import { Separator } from "~/components/ui/separator"
+import { signInWithEmail, signInWithGoogle, signUpWithEmail } from "~/lib/firebase"
 
 export default function Login() {
-  const [isSignUp, setIsSignUp] = useState(false);
+  const navigate = useNavigate()
+  const { user, loading: authLoading, configured } = useAuth()
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Firebase auth logic will go here
-    console.log("Form submitted");
-  };
+  const [isSignUp, setIsSignUp] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [displayName, setDisplayName] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
-  const handleGoogleSignIn = () => {
-    // Firebase Google sign in logic will go here
-    console.log("Google sign in");
-  };
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate("/dashboard", { replace: true })
+    }
+  }, [authLoading, navigate, user])
+
+  function clearFormError() {
+    setError(null)
+  }
+
+  function toggleMode() {
+    setIsSignUp((prev) => !prev)
+    clearFormError()
+  }
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    clearFormError()
+
+    if (!configured) {
+      setError("Firebase is not configured. Check your .env file.")
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      if (isSignUp) {
+        await signUpWithEmail({
+          email,
+          password,
+          displayName: displayName.trim() || undefined,
+        })
+      } else {
+        await signInWithEmail({ email, password })
+      }
+      navigate("/dashboard", { replace: true })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Authentication failed.")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    clearFormError()
+
+    if (!configured) {
+      setError("Firebase is not configured. Check your .env file.")
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      await signInWithGoogle()
+      navigate("/dashboard", { replace: true })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google sign-in failed.")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
+        <p className="text-sm text-muted-foreground">Loading...</p>
+      </div>
+    )
+  }
+
+  const isDisabled = submitting || !configured
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4 bg-muted/40">
+    <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">
             {isSignUp ? "Create an account" : "Welcome back"}
           </CardTitle>
           <CardDescription>
-            {isSignUp 
-              ? "Enter your details below to create your account" 
+            {isSignUp
+              ? "Enter your details below to create your account"
               : "Enter your email and password to sign in"}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-6">
-            <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
+            {!configured && (
+              <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                Firebase is not configured. Add your VITE_FIREBASE_* keys to `.env` and restart
+                the dev server.
+              </p>
+            )}
+
+            {error && (
+              <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {error}
+              </p>
+            )}
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              disabled={isDisabled}
+              onClick={handleGoogleSignIn}
+            >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="mr-2 size-4">
                 <path
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -54,21 +152,38 @@ export default function Login() {
                   fill="#EA4335"
                 />
               </svg>
-              {isSignUp ? "Sign up with Google" : "Sign in with Google"}
+              {submitting
+                ? "Please wait..."
+                : isSignUp
+                  ? "Sign up with Google"
+                  : "Sign in with Google"}
             </Button>
-            
+
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <Separator />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  Or continue with
-                </span>
+                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
               </div>
             </div>
 
             <form onSubmit={handleSubmit} className="grid gap-4">
+              {isSignUp && (
+                <div className="grid gap-2">
+                  <Label htmlFor="displayName">Name (optional)</Label>
+                  <Input
+                    id="displayName"
+                    type="text"
+                    placeholder="Your name"
+                    value={displayName}
+                    onChange={(event) => setDisplayName(event.target.value)}
+                    disabled={isDisabled}
+                    autoComplete="name"
+                  />
+                </div>
+              )}
+
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -76,35 +191,51 @@ export default function Login() {
                   type="email"
                   placeholder="m@example.com"
                   required
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  disabled={isDisabled}
+                  autoComplete="email"
                 />
               </div>
+
               <div className="grid gap-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
                   {!isSignUp && (
                     <Link
                       to="/forgot-password"
-                      className="text-sm text-primary hover:underline underline-offset-4"
+                      className="text-sm text-primary underline-offset-4 hover:underline"
                     >
                       Forgot password?
                     </Link>
                   )}
                 </div>
-                <Input id="password" type="password" required />
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  disabled={isDisabled}
+                  autoComplete={isSignUp ? "new-password" : "current-password"}
+                />
               </div>
-              <Button type="submit" className="w-full">
-                {isSignUp ? "Create account" : "Sign in"}
+
+              <Button type="submit" className="w-full" disabled={isDisabled}>
+                {submitting ? "Please wait..." : isSignUp ? "Create account" : "Sign in"}
               </Button>
             </form>
           </div>
         </CardContent>
-        <CardFooter className="flex justify-center border-t p-4 mt-2">
-          <div className="text-sm text-center text-muted-foreground">
+        <CardFooter className="mt-2 flex justify-center border-t p-4">
+          <div className="text-center text-sm text-muted-foreground">
             {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
             <button
               type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-primary hover:underline underline-offset-4 font-medium cursor-pointer"
+              onClick={toggleMode}
+              disabled={submitting}
+              className="cursor-pointer font-medium text-primary underline-offset-4 hover:underline"
             >
               {isSignUp ? "Sign in" : "Sign up"}
             </button>
@@ -112,5 +243,5 @@ export default function Login() {
         </CardFooter>
       </Card>
     </div>
-  );
+  )
 }

@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 import { Link } from "react-router"
 
+import { SidebarUser } from "~/components/sidebar-user"
 import {
   Sidebar,
   SidebarContent,
@@ -131,6 +132,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarUser />
     </Sidebar>
   )
 }
