@@ -10,14 +10,18 @@ import {
   Zap,
 } from "lucide-react"
 import { Button } from "~/components/ui/button"
+import { useAuth } from "~/contexts/auth-provider"
+import { getPersonalizedGreeting } from "~/lib/user-display"
 
 export default function Dashboard() {
+  const { user } = useAuth()
+
   return (
     <div className="flex flex-1 flex-col gap-6 p-6 sm:p-8">
       {/* 1. Welcome Banner */}
       <div className="flex flex-col gap-4 rounded-xl border bg-card p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Good evening, Addy.</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{getPersonalizedGreeting(user)}</h1>
           <p className="mt-1 text-muted-foreground">
             Target Role: <span className="font-medium text-foreground">Frontend Engineer</span>
           </p>

@@ -1,4 +1,5 @@
 import { Button } from "~/components/ui/button"
+import { useAuth } from "~/contexts/auth-provider"
 import { Link } from "react-router"
 import { 
   ArrowRight, 
@@ -21,8 +22,8 @@ export function meta() {
 }
 
 export default function Home() {
-  // TODO: Replace with actual Firebase auth state
-  const isLoggedIn = false;
+  const { user } = useAuth()
+  const isLoggedIn = Boolean(user)
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/20">

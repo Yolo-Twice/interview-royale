@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { LogOut, User } from "lucide-react"
-import type { User as FirebaseUser } from "firebase/auth"
 import { Link, useNavigate } from "react-router"
 
 import { useAuth } from "~/contexts/auth-provider"
@@ -13,32 +12,7 @@ import {
   SidebarMenuItem,
 } from "~/components/ui/sidebar"
 import { signOutUser } from "~/lib/firebase"
-
-function getDisplayName(user: FirebaseUser): string {
-  if (user.displayName) {
-    return user.displayName
-  }
-  if (user.email) {
-    return user.email.split("@")[0] ?? "User"
-  }
-  return "User"
-}
-
-function getInitials(user: FirebaseUser): string {
-  if (user.displayName) {
-    return user.displayName
-      .split(" ")
-      .filter(Boolean)
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase()
-  }
-  if (user.email) {
-    return user.email[0]?.toUpperCase() ?? "U"
-  }
-  return "U"
-}
+import { getUserDisplayName, getUserInitials } from "~/lib/user-display"
 
 export function SidebarUser() {
   const navigate = useNavigate()
@@ -90,7 +64,7 @@ export function SidebarUser() {
     )
   }
 
-  const displayName = getDisplayName(user)
+  const displayName = getUserDisplayName(user)
   const email = user.email ?? ""
 
   return (
@@ -102,7 +76,7 @@ export function SidebarUser() {
               {user.photoURL ? (
                 <AvatarImage src={user.photoURL} alt={displayName} referrerPolicy="no-referrer" />
               ) : null}
-              <AvatarFallback>{getInitials(user)}</AvatarFallback>
+              <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
               <p className="truncate text-sm font-medium">{displayName}</p>
