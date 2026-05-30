@@ -13,6 +13,8 @@ import { AuthProvider } from "~/contexts/auth-provider"
 import { APPEARANCE_INIT_SCRIPT } from "~/lib/appearance-settings"
 import "./app.css"
 
+import { TooltipProvider } from "~/components/ui/tooltip"
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" data-font-size="md" data-font-family="inter">
@@ -24,9 +26,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
-        <ScrollRestoration />
-        <Scripts />
+        <TooltipProvider>
+          {children}
+          <ScrollRestoration />
+          <Scripts />
+        </TooltipProvider>
       </body>
     </html>
   )

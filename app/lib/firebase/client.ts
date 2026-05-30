@@ -3,7 +3,10 @@ import { type Auth, getAuth } from "firebase/auth"
 import { type Firestore, getFirestore } from "firebase/firestore"
 import { type FirebaseStorage, getStorage } from "firebase/storage"
 
-import { assertFirebaseConfigured, getFirebaseClientConfig } from "~/lib/firebase/env"
+import {
+  assertFirebaseConfigured,
+  getFirebaseClientConfig,
+} from "~/lib/firebase/env"
 
 function isBrowser(): boolean {
   return typeof window !== "undefined"
@@ -25,7 +28,8 @@ export function getFirebaseApp(): FirebaseApp {
     return appInstance
   }
 
-  appInstance = getApps().length > 0 ? getApp() : initializeApp(getFirebaseClientConfig())
+  appInstance =
+    getApps().length > 0 ? getApp() : initializeApp(getFirebaseClientConfig())
   return appInstance
 }
 

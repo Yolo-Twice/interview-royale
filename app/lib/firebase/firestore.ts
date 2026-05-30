@@ -14,7 +14,10 @@ import {
 
 import { getFirestoreDb } from "~/lib/firebase/client"
 import { userInterviewsPath } from "~/lib/firebase/collections"
-import type { InterviewSessionDocument, InterviewSessionInput } from "~/lib/firebase/types"
+import type {
+  InterviewSessionDocument,
+  InterviewSessionInput,
+} from "~/lib/firebase/types"
 
 export function interviewDocRef(userId: string, interviewId: string) {
   return doc(getFirestoreDb(), userInterviewsPath(userId), interviewId)
@@ -41,7 +44,10 @@ export async function listInterviewSessions(userId: string): Promise<
     data: InterviewSessionDocument
   }>
 > {
-  const interviewsQuery = query(interviewsCollectionRef(userId), orderBy("createdAt", "desc"))
+  const interviewsQuery = query(
+    interviewsCollectionRef(userId),
+    orderBy("createdAt", "desc")
+  )
   const snapshot = await getDocs(interviewsQuery)
 
   return snapshot.docs.map((document: QueryDocumentSnapshot<DocumentData>) => ({

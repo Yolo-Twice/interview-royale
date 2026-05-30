@@ -12,9 +12,18 @@ import {
   SheetTitle,
 } from "~/components/ui/sheet"
 
-type InterviewType = "Frontend" | "Backend" | "DSA" | "Behavioral" | "System Design"
+type InterviewType =
+  | "Frontend"
+  | "Backend"
+  | "DSA"
+  | "Behavioral"
+  | "System Design"
 type Difficulty = "Easy" | "Medium" | "Hard"
-type PerformanceTag = "High Score" | "Weak Areas" | "Incomplete Sessions" | "Strong Communication"
+type PerformanceTag =
+  | "High Score"
+  | "Weak Areas"
+  | "Incomplete Sessions"
+  | "Strong Communication"
 
 type InterviewSession = {
   id: string
@@ -55,11 +64,18 @@ const sessions: InterviewSession[] = [
     completed: true,
     transcript: [
       { speaker: "AI", line: "Explain event delegation in React and the DOM." },
-      { speaker: "You", line: "Event delegation attaches one listener to a parent and uses bubbling..." },
+      {
+        speaker: "You",
+        line: "Event delegation attaches one listener to a parent and uses bubbling...",
+      },
       { speaker: "AI", line: "When would you avoid useMemo?" },
-      { speaker: "You", line: "When the computation is cheap and memo overhead is higher than recalculation." },
+      {
+        speaker: "You",
+        line: "When the computation is cheap and memo overhead is higher than recalculation.",
+      },
     ],
-    recommendation: "Revisit rendering bottlenecks in large component trees and profiling workflows.",
+    recommendation:
+      "Revisit rendering bottlenecks in large component trees and profiling workflows.",
   },
   {
     id: "api-design-02",
@@ -79,9 +95,13 @@ const sessions: InterviewSession[] = [
     completed: true,
     transcript: [
       { speaker: "AI", line: "How would you version breaking API changes?" },
-      { speaker: "You", line: "Path-based versioning with migration docs and sunset windows..." },
+      {
+        speaker: "You",
+        line: "Path-based versioning with migration docs and sunset windows...",
+      },
     ],
-    recommendation: "Practice trade-offs between URL, header, and content-negotiation versioning.",
+    recommendation:
+      "Practice trade-offs between URL, header, and content-negotiation versioning.",
   },
   {
     id: "dsa-03",
@@ -101,7 +121,10 @@ const sessions: InterviewSession[] = [
     completed: true,
     transcript: [
       { speaker: "AI", line: "What is the invariant in your sliding window?" },
-      { speaker: "You", line: "The window always keeps unique elements while maximizing size." },
+      {
+        speaker: "You",
+        line: "The window always keeps unique elements while maximizing size.",
+      },
     ],
     recommendation: "Narrate complexity and edge cases earlier before coding.",
   },
@@ -122,10 +145,17 @@ const sessions: InterviewSession[] = [
     tags: ["Weak Areas"],
     completed: true,
     transcript: [
-      { speaker: "AI", line: "Describe a conflict and your resolution approach." },
-      { speaker: "You", line: "I aligned stakeholders by clarifying priorities and constraints..." },
+      {
+        speaker: "AI",
+        line: "Describe a conflict and your resolution approach.",
+      },
+      {
+        speaker: "You",
+        line: "I aligned stakeholders by clarifying priorities and constraints...",
+      },
     ],
-    recommendation: "Use STAR more tightly and add measurable outcomes for impact.",
+    recommendation:
+      "Use STAR more tightly and add measurable outcomes for impact.",
   },
   {
     id: "system-design-05",
@@ -144,10 +174,14 @@ const sessions: InterviewSession[] = [
     tags: ["Incomplete Sessions"],
     completed: false,
     transcript: [
-      { speaker: "AI", line: "Design a scalable pub/sub layer for chat rooms." },
+      {
+        speaker: "AI",
+        line: "Design a scalable pub/sub layer for chat rooms.",
+      },
       { speaker: "You", line: "I would start with partitioning by room id..." },
     ],
-    recommendation: "Resume this session and complete data consistency and failover sections.",
+    recommendation:
+      "Resume this session and complete data consistency and failover sections.",
   },
 ]
 
@@ -159,7 +193,12 @@ const interviewTypeFilters: Array<InterviewType | "All"> = [
   "Behavioral",
   "System Design",
 ]
-const difficultyFilters: Array<Difficulty | "All"> = ["All", "Easy", "Medium", "Hard"]
+const difficultyFilters: Array<Difficulty | "All"> = [
+  "All",
+  "Easy",
+  "Medium",
+  "Hard",
+]
 const performanceFilters: Array<PerformanceTag | "All"> = [
   "All",
   "High Score",
@@ -182,10 +221,18 @@ function scoreTone(score: number) {
 export default function InterviewHistoryPage() {
   const [search, setSearch] = useState("")
   const [typeFilter, setTypeFilter] = useState<InterviewType | "All">("All")
-  const [difficultyFilter, setDifficultyFilter] = useState<Difficulty | "All">("All")
-  const [performanceFilter, setPerformanceFilter] = useState<PerformanceTag | "All">("All")
-  const [dateFilter, setDateFilter] = useState<InterviewSession["dateGroup"] | "All">("All")
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
+  const [difficultyFilter, setDifficultyFilter] = useState<Difficulty | "All">(
+    "All"
+  )
+  const [performanceFilter, setPerformanceFilter] = useState<
+    PerformanceTag | "All"
+  >("All")
+  const [dateFilter, setDateFilter] = useState<
+    InterviewSession["dateGroup"] | "All"
+  >("All")
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
+    null
+  )
 
   const filteredSessions = useMemo(() => {
     return sessions.filter((session) => {
@@ -197,24 +244,34 @@ export default function InterviewHistoryPage() {
         session.weakAreas.some((area) => area.toLowerCase().includes(query))
 
       const typeMatch = typeFilter === "All" || session.type === typeFilter
-      const difficultyMatch = difficultyFilter === "All" || session.difficulty === difficultyFilter
+      const difficultyMatch =
+        difficultyFilter === "All" || session.difficulty === difficultyFilter
       const performanceMatch =
         performanceFilter === "All" || session.tags.includes(performanceFilter)
       const dateMatch = dateFilter === "All" || session.dateGroup === dateFilter
 
-      return searchMatch && typeMatch && difficultyMatch && performanceMatch && dateMatch
+      return (
+        searchMatch &&
+        typeMatch &&
+        difficultyMatch &&
+        performanceMatch &&
+        dateMatch
+      )
     })
   }, [dateFilter, difficultyFilter, performanceFilter, search, typeFilter])
 
   const selectedSession = useMemo(
-    () => filteredSessions.find((session) => session.id === selectedSessionId) ?? null,
+    () =>
+      filteredSessions.find((session) => session.id === selectedSessionId) ??
+      null,
     [filteredSessions, selectedSessionId]
   )
 
   const completedSessions = sessions.filter((session) => session.completed)
   const totalInterviews = sessions.length
   const averageScore = (
-    completedSessions.reduce((sum, session) => sum + session.score, 0) / completedSessions.length
+    completedSessions.reduce((sum, session) => sum + session.score, 0) /
+    completedSessions.length
   ).toFixed(1)
   const bestDomain = "Frontend"
   const trend = "+12% this month"
@@ -223,9 +280,12 @@ export default function InterviewHistoryPage() {
     <div className="flex flex-1 flex-col gap-6 bg-background p-6 sm:p-8">
       <section className="flex flex-col gap-4 rounded-2xl border bg-card p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Interview History</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Interview History
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Review previous interviews and track progress across technical and communication skills.
+            Review previous interviews and track progress across technical and
+            communication skills.
           </p>
         </div>
         <Button asChild>
@@ -247,8 +307,10 @@ export default function InterviewHistoryPage() {
 
           <select
             value={typeFilter}
-            onChange={(event) => setTypeFilter(event.target.value as InterviewType | "All")}
-            className="h-9 rounded-md border bg-background px-3 text-sm outline-none ring-primary/30 transition focus:ring-2"
+            onChange={(event) =>
+              setTypeFilter(event.target.value as InterviewType | "All")
+            }
+            className="h-9 rounded-md border bg-background px-3 text-sm ring-primary/30 transition outline-none focus:ring-2"
           >
             {interviewTypeFilters.map((option) => (
               <option key={option} value={option}>
@@ -259,8 +321,10 @@ export default function InterviewHistoryPage() {
 
           <select
             value={difficultyFilter}
-            onChange={(event) => setDifficultyFilter(event.target.value as Difficulty | "All")}
-            className="h-9 rounded-md border bg-background px-3 text-sm outline-none ring-primary/30 transition focus:ring-2"
+            onChange={(event) =>
+              setDifficultyFilter(event.target.value as Difficulty | "All")
+            }
+            className="h-9 rounded-md border bg-background px-3 text-sm ring-primary/30 transition outline-none focus:ring-2"
           >
             {difficultyFilters.map((option) => (
               <option key={option} value={option}>
@@ -272,9 +336,11 @@ export default function InterviewHistoryPage() {
           <select
             value={dateFilter}
             onChange={(event) =>
-              setDateFilter(event.target.value as InterviewSession["dateGroup"] | "All")
+              setDateFilter(
+                event.target.value as InterviewSession["dateGroup"] | "All"
+              )
             }
-            className="h-9 rounded-md border bg-background px-3 text-sm outline-none ring-primary/30 transition focus:ring-2"
+            className="h-9 rounded-md border bg-background px-3 text-sm ring-primary/30 transition outline-none focus:ring-2"
           >
             {dateFilters.map((option) => (
               <option key={option} value={option}>
@@ -288,7 +354,7 @@ export default function InterviewHistoryPage() {
             onChange={(event) =>
               setPerformanceFilter(event.target.value as PerformanceTag | "All")
             }
-            className="h-9 rounded-md border bg-background px-3 text-sm outline-none ring-primary/30 transition focus:ring-2"
+            className="h-9 rounded-md border bg-background px-3 text-sm ring-primary/30 transition outline-none focus:ring-2"
           >
             {performanceFilters.map((option) => (
               <option key={option} value={option}>
@@ -302,7 +368,9 @@ export default function InterviewHistoryPage() {
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <article className="rounded-xl border bg-card p-4 shadow-sm">
           <p className="text-xs text-muted-foreground">Total Interviews</p>
-          <p className="mt-2 text-2xl font-semibold">{totalInterviews} Interviews</p>
+          <p className="mt-2 text-2xl font-semibold">
+            {totalInterviews} Interviews
+          </p>
         </article>
         <article className="rounded-xl border bg-card p-4 shadow-sm">
           <p className="text-xs text-muted-foreground">Average Score</p>
@@ -348,21 +416,39 @@ export default function InterviewHistoryPage() {
                 <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
                   <p>
                     Technical:{" "}
-                    <span className={session.completed ? scoreTone(session.technical) : "text-muted-foreground"}>
+                    <span
+                      className={
+                        session.completed
+                          ? scoreTone(session.technical)
+                          : "text-muted-foreground"
+                      }
+                    >
                       {session.completed ? session.technical.toFixed(1) : "--"}
                     </span>
                   </p>
                   <p>
                     Communication:{" "}
                     <span
-                      className={session.completed ? scoreTone(session.communication) : "text-muted-foreground"}
+                      className={
+                        session.completed
+                          ? scoreTone(session.communication)
+                          : "text-muted-foreground"
+                      }
                     >
-                      {session.completed ? session.communication.toFixed(1) : "--"}
+                      {session.completed
+                        ? session.communication.toFixed(1)
+                        : "--"}
                     </span>
                   </p>
                   <p>
                     Confidence:{" "}
-                    <span className={session.completed ? scoreTone(session.confidence) : "text-muted-foreground"}>
+                    <span
+                      className={
+                        session.completed
+                          ? scoreTone(session.confidence)
+                          : "text-muted-foreground"
+                      }
+                    >
                       {session.completed ? session.confidence.toFixed(1) : "--"}
                     </span>
                   </p>
@@ -391,14 +477,24 @@ export default function InterviewHistoryPage() {
                 </div>
 
                 <div className="mt-5 flex flex-wrap gap-2">
-                  <Button size="sm" onClick={() => setSelectedSessionId(session.id)}>
+                  <Button
+                    size="sm"
+                    onClick={() => setSelectedSessionId(session.id)}
+                  >
                     View Report
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => setSelectedSessionId(session.id)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedSessionId(session.id)}
+                  >
                     Replay Transcript
                   </Button>
                   <Button variant="ghost" size="sm" asChild>
-                    <Link to="/start-interview" className="inline-flex items-center gap-1">
+                    <Link
+                      to="/start-interview"
+                      className="inline-flex items-center gap-1"
+                    >
                       Resume Practice <ArrowUpRight className="size-4" />
                     </Link>
                   </Button>
@@ -418,13 +514,21 @@ export default function InterviewHistoryPage() {
               >
                 <div>
                   <p className="font-medium">{session.topic}</p>
-                  <p className="text-xs text-muted-foreground">{session.dateLabel}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {session.dateLabel}
+                  </p>
                 </div>
                 <div className="text-right">
-                  <p className={`font-semibold ${session.completed ? scoreTone(session.score) : "text-muted-foreground"}`}>
-                    {session.completed ? `${session.score.toFixed(1)} / 10` : "Incomplete"}
+                  <p
+                    className={`font-semibold ${session.completed ? scoreTone(session.score) : "text-muted-foreground"}`}
+                  >
+                    {session.completed
+                      ? `${session.score.toFixed(1)} / 10`
+                      : "Incomplete"}
                   </p>
-                  <p className="text-xs text-muted-foreground">{session.type}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {session.type}
+                  </p>
                 </div>
               </div>
             ))}
@@ -432,14 +536,21 @@ export default function InterviewHistoryPage() {
         </div>
       </section>
 
-      <Sheet open={Boolean(selectedSession)} onOpenChange={(open) => !open && setSelectedSessionId(null)}>
-        <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-xl">
+      <Sheet
+        open={Boolean(selectedSession)}
+        onOpenChange={(open) => !open && setSelectedSessionId(null)}
+      >
+        <SheetContent
+          side="right"
+          className="w-full overflow-y-auto sm:max-w-xl"
+        >
           {selectedSession ? (
             <>
               <SheetHeader>
                 <SheetTitle>Interview Details</SheetTitle>
                 <SheetDescription>
-                  {selectedSession.title} · {selectedSession.type} · {selectedSession.dateLabel}
+                  {selectedSession.title} · {selectedSession.type} ·{" "}
+                  {selectedSession.dateLabel}
                 </SheetDescription>
               </SheetHeader>
 
@@ -449,7 +560,8 @@ export default function InterviewHistoryPage() {
                   <div className="mt-3 space-y-2 rounded-xl border bg-background p-3">
                     {selectedSession.transcript.map((line, index) => (
                       <p key={`${line.speaker}-${index}`} className="text-sm">
-                        <span className="font-medium">{line.speaker}:</span> {line.line}
+                        <span className="font-medium">{line.speaker}:</span>{" "}
+                        {line.line}
                       </p>
                     ))}
                   </div>
@@ -464,15 +576,25 @@ export default function InterviewHistoryPage() {
 
                 <section className="grid gap-3 sm:grid-cols-2">
                   <div className="rounded-xl border bg-background p-3">
-                    <p className="text-xs text-muted-foreground">Technical Breakdown</p>
+                    <p className="text-xs text-muted-foreground">
+                      Technical Breakdown
+                    </p>
                     <p className="mt-1 text-lg font-semibold">
-                      {selectedSession.completed ? selectedSession.technical.toFixed(1) : "--"} / 10
+                      {selectedSession.completed
+                        ? selectedSession.technical.toFixed(1)
+                        : "--"}{" "}
+                      / 10
                     </p>
                   </div>
                   <div className="rounded-xl border bg-background p-3">
-                    <p className="text-xs text-muted-foreground">Communication Analysis</p>
+                    <p className="text-xs text-muted-foreground">
+                      Communication Analysis
+                    </p>
                     <p className="mt-1 text-lg font-semibold">
-                      {selectedSession.completed ? selectedSession.communication.toFixed(1) : "--"} / 10
+                      {selectedSession.completed
+                        ? selectedSession.communication.toFixed(1)
+                        : "--"}{" "}
+                      / 10
                     </p>
                   </div>
                 </section>
@@ -482,7 +604,9 @@ export default function InterviewHistoryPage() {
                     <Sparkles className="size-4" />
                     Recommended Practice
                   </p>
-                  <p className="mt-2 text-sm text-muted-foreground">{selectedSession.recommendation}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {selectedSession.recommendation}
+                  </p>
                   <Button className="mt-4" asChild>
                     <Link to="/start-interview">Resume Practice</Link>
                   </Button>

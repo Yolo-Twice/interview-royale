@@ -1,4 +1,8 @@
-export { assertFirebaseConfigured, getFirebaseClientConfig, isFirebaseConfigured } from "~/lib/firebase/env"
+export {
+  assertFirebaseConfigured,
+  getFirebaseClientConfig,
+  isFirebaseConfigured,
+} from "~/lib/firebase/env"
 export {
   getFirebaseApp,
   getFirebaseAuth,
@@ -24,7 +28,11 @@ export {
   listInterviewSessions,
   saveInterviewSession,
 } from "~/lib/firebase/firestore"
-export { ensureUserProfile, getUserProfile, userDocRef } from "~/lib/firebase/users"
+export {
+  ensureUserProfile,
+  getUserProfile,
+  userDocRef,
+} from "~/lib/firebase/users"
 export type {
   Difficulty,
   InterviewSessionDocument,
