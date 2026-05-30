@@ -11,7 +11,6 @@ import {
   MonitorPlay,
   Network,
   Play,
-  Settings,
   Target,
   TrendingUp,
   User,
@@ -19,6 +18,7 @@ import {
 } from "lucide-react"
 import { Link } from "react-router"
 
+import { SidebarSettings } from "~/components/sidebar-settings"
 import { SidebarUser } from "~/components/sidebar-user"
 import {
   Sidebar,
@@ -122,12 +122,7 @@ export function AppSidebar() {
                   <span>Profile</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <Settings />
-                  <span>Settings</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              <SidebarSettings />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
