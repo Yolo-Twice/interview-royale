@@ -25,7 +25,9 @@ export type SignUpInput = AuthCredentials & {
   displayName?: string
 }
 
-export async function signInWithEmail(credentials: AuthCredentials): Promise<User> {
+export async function signInWithEmail(
+  credentials: AuthCredentials
+): Promise<User> {
   try {
     const result = await signInWithEmailAndPassword(
       getFirebaseAuth(),
@@ -61,7 +63,9 @@ export async function signInWithGoogle(): Promise<User> {
     const result = await signInWithPopup(getFirebaseAuth(), googleProvider)
     return result.user
   } catch (error) {
-    throw new Error(getFirebaseErrorMessage(error, "Failed to sign in with Google."))
+    throw new Error(
+      getFirebaseErrorMessage(error, "Failed to sign in with Google.")
+    )
   }
 }
 
@@ -77,11 +81,15 @@ export async function resetPassword(email: string): Promise<void> {
   try {
     await sendPasswordResetEmail(getFirebaseAuth(), email)
   } catch (error) {
-    throw new Error(getFirebaseErrorMessage(error, "Failed to send reset email."))
+    throw new Error(
+      getFirebaseErrorMessage(error, "Failed to send reset email.")
+    )
   }
 }
 
-export function subscribeToAuthState(callback: (user: User | null) => void): Unsubscribe {
+export function subscribeToAuthState(
+  callback: (user: User | null) => void
+): Unsubscribe {
   return onAuthStateChanged(getFirebaseAuth(), callback)
 }
 

@@ -14,7 +14,11 @@ import {
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { Separator } from "~/components/ui/separator"
-import { signInWithEmail, signInWithGoogle, signUpWithEmail } from "~/lib/firebase"
+import {
+  signInWithEmail,
+  signInWithGoogle,
+  signUpWithEmail,
+} from "~/lib/firebase"
 
 export default function Login() {
   const navigate = useNavigate()
@@ -116,8 +120,8 @@ export default function Login() {
           <div className="grid gap-6">
             {!configured && (
               <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                Firebase is not configured. Add your VITE_FIREBASE_* keys to `.env` and restart
-                the dev server.
+                Firebase is not configured. Add your VITE_FIREBASE_* keys to
+                `.env` and restart the dev server.
               </p>
             )}
 
@@ -134,7 +138,11 @@ export default function Login() {
               disabled={isDisabled}
               onClick={handleGoogleSignIn}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="mr-2 size-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className="mr-2 size-4"
+              >
                 <path
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                   fill="#4285F4"
@@ -164,7 +172,9 @@ export default function Login() {
                 <Separator />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                <span className="bg-card px-2 text-muted-foreground">
+                  Or continue with
+                </span>
               </div>
             </div>
 
@@ -223,7 +233,11 @@ export default function Login() {
               </div>
 
               <Button type="submit" className="w-full" disabled={isDisabled}>
-                {submitting ? "Please wait..." : isSignUp ? "Create account" : "Sign in"}
+                {submitting
+                  ? "Please wait..."
+                  : isSignUp
+                    ? "Create account"
+                    : "Sign in"}
               </Button>
             </form>
           </div>

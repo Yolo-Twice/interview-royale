@@ -1,6 +1,11 @@
 import type { Timestamp } from "firebase/firestore"
 
-export type InterviewType = "Frontend" | "Backend" | "DSA" | "Behavioral" | "System Design"
+export type InterviewType =
+  | "Frontend"
+  | "Backend"
+  | "DSA"
+  | "Behavioral"
+  | "System Design"
 export type Difficulty = "Easy" | "Medium" | "Hard"
 
 export type TranscriptLine = {
@@ -29,7 +34,10 @@ export type InterviewSessionDocument = {
   updatedAt: Timestamp
 }
 
-export type InterviewSessionInput = Omit<InterviewSessionDocument, "createdAt" | "updatedAt">
+export type InterviewSessionInput = Omit<
+  InterviewSessionDocument,
+  "createdAt" | "updatedAt"
+>
 
 export type UserProfileDocument = {
   displayName: string | null

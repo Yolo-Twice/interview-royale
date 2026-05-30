@@ -32,7 +32,9 @@ export async function ensureUserProfile(user: User): Promise<void> {
   await setDoc(ref, profile)
 }
 
-export async function getUserProfile(userId: string): Promise<UserProfileDocument | null> {
+export async function getUserProfile(
+  userId: string
+): Promise<UserProfileDocument | null> {
   const snapshot = await getDoc(userDocRef(userId))
   if (!snapshot.exists()) {
     return null

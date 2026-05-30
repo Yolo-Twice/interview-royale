@@ -37,7 +37,9 @@ export default function ForgotPassword() {
       await resetPassword(email)
       setSuccess(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to send reset email.")
+      setError(
+        err instanceof Error ? err.message : "Failed to send reset email."
+      )
     } finally {
       setSubmitting(false)
     }
@@ -49,7 +51,8 @@ export default function ForgotPassword() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Reset password</CardTitle>
           <CardDescription>
-            Enter your email and we&apos;ll send you a link to reset your password.
+            Enter your email and we&apos;ll send you a link to reset your
+            password.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -78,14 +81,21 @@ export default function ForgotPassword() {
                   autoComplete="email"
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={submitting || !configured}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={submitting || !configured}
+              >
                 {submitting ? "Sending..." : "Send reset link"}
               </Button>
             </form>
           )}
         </CardContent>
         <CardFooter className="flex justify-center border-t p-4">
-          <Link to="/login" className="text-sm text-primary underline-offset-4 hover:underline">
+          <Link
+            to="/login"
+            className="text-sm text-primary underline-offset-4 hover:underline"
+          >
             Back to sign in
           </Link>
         </CardFooter>

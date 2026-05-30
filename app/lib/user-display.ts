@@ -48,7 +48,10 @@ export function getTimeGreeting(date = new Date()): string {
   return "Good evening"
 }
 
-export function getPersonalizedGreeting(user: User | null | undefined, date = new Date()): string {
+export function getPersonalizedGreeting(
+  user: User | null | undefined,
+  date = new Date()
+): string {
   const greeting = getTimeGreeting(date)
   const firstName = getUserFirstName(user)
   return `${greeting}, ${firstName}.`

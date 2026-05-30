@@ -89,7 +89,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-
         {/* TOOLS */}
         <SidebarGroup>
           <SidebarGroupLabel>Tools</SidebarGroupLabel>

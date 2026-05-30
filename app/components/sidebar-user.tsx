@@ -74,14 +74,20 @@ export function SidebarUser() {
           <div className="flex w-full items-center gap-3 rounded-lg px-2 py-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
             <Avatar size="lg" className="size-9">
               {user.photoURL ? (
-                <AvatarImage src={user.photoURL} alt={displayName} referrerPolicy="no-referrer" />
+                <AvatarImage
+                  src={user.photoURL}
+                  alt={displayName}
+                  referrerPolicy="no-referrer"
+                />
               ) : null}
               <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
               <p className="truncate text-sm font-medium">{displayName}</p>
               {email ? (
-                <p className="truncate text-xs text-muted-foreground">{email}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {email}
+                </p>
               ) : null}
             </div>
           </div>

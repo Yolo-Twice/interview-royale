@@ -11,6 +11,8 @@ import type { Route } from "./+types/root"
 import { AuthProvider } from "~/contexts/auth-provider"
 import "./app.css"
 
+import { TooltipProvider } from "~/components/ui/tooltip"
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -21,9 +23,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
-        <ScrollRestoration />
-        <Scripts />
+        <TooltipProvider>
+          {children}
+          <ScrollRestoration />
+          <Scripts />
+        </TooltipProvider>
       </body>
     </html>
   )

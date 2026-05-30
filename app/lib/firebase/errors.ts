@@ -12,7 +12,10 @@ const authErrorMessages: Record<string, string> = {
   "auth/too-many-requests": "Too many attempts. Try again later.",
 }
 
-export function getFirebaseErrorMessage(error: unknown, fallback = "Something went wrong."): string {
+export function getFirebaseErrorMessage(
+  error: unknown,
+  fallback = "Something went wrong."
+): string {
   if (error instanceof FirebaseError) {
     return authErrorMessages[error.code] ?? error.message ?? fallback
   }
