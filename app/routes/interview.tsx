@@ -19,27 +19,62 @@ import { cn } from "~/lib/utils"
 
 type ChatMessage = {
   id: string
-  role: "user" | "ai"
-  text: string
+  role: "assistant" | "user"
+  content: string
 }
 
 export default function LiveInterviewPage() {
   const location = useLocation()
   const config = location.state as { role?: string; focus?: string; difficulty?: string } | null
 
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: "welcome",
-      role: "ai",
-      text: config
-        ? `Hello! I am your AI interviewer. We'll be focusing on a ${config.difficulty} ${config.role} position, covering ${config.focus}. Let's get started. Could you tell me a little bit about yourself and your recent experience?`
-        : "Hello! I am your AI interviewer. Let's get started. Could you tell me a little bit about yourself and your recent experience?",
-    },
-  ])
+  const [interviewId, setInterviewId] = useState<string | null>(null)
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [isCompleted, setIsCompleted] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
+
   const [inputValue, setInputValue] = useState("")
   const [isRecording, setIsRecording] = useState(false)
-  const [isProcessing, setIsProcessing] = useState(false)
   const recognitionRef = useRef<any>(null)
+  const isStarted = useRef(false)
+
+  // Start Interview API call
+  useEffect(() => {
+    if (isStarted.current) return
+    isStarted.current = true
+
+    const startInterview = async () => {
+      setIsTyping(true)
+      try {
+        const response = await fetch("/api/interviews/start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            role: config?.role || "Frontend Developer",
+            keyFocusArea: config?.focus || "React",
+            difficulty: config?.difficulty || "Mid-Level"
+          })
+        })
+        const data = await response.json()
+        setInterviewId(data.interviewId)
+        setMessages([{
+          id: Date.now().toString(),
+          role: "assistant",
+          content: data.firstQuestion || "Welcome! Let's begin the interview."
+        }])
+      } catch (error) {
+        console.error("Failed to start interview:", error)
+        setMessages([{
+          id: Date.now().toString(),
+          role: "assistant",
+          content: "Sorry, I couldn't connect to the server. Please try again."
+        }])
+      } finally {
+        setIsTyping(false)
+      }
+    }
+
+    startInterview()
+  }, [config])
 
   // Initialize Speech Recognition
   useEffect(() => {
@@ -115,33 +150,55 @@ export default function LiveInterviewPage() {
   }
 
   const handleSubmit = async () => {
-    if (!inputValue.trim() || isProcessing) return
+    if (!inputValue.trim() || isTyping || isCompleted || !interviewId) return
 
     // Stop recording if active
     if (isRecording) {
       recognitionRef.current?.stop()
     }
 
+    const answer = inputValue.trim()
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       role: "user",
-      text: inputValue.trim(),
+      content: answer,
     }
     setMessages((prev) => [...prev, userMessage])
     setInputValue("")
-    setIsProcessing(true)
+    setIsTyping(true)
 
-    // TODO: Integrate backend AI response here.
-    // For now, simulate a mock response delay.
-    setTimeout(() => {
-      const aiMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        role: "ai",
-        text: "That sounds great! Can you elaborate on a specific challenge you faced during your last project and how you overcame it?",
+    try {
+      const response = await fetch("/api/interviews/respond", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          interviewId,
+          answer
+        })
+      })
+      const data = await response.json()
+      
+      if (data.status === "completed") {
+        setIsCompleted(true)
+      } else if (data.nextQuestion || data.message) {
+        const aiMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: data.nextQuestion || data.message || "Thank you for your answer. Let's move on.",
+        }
+        setMessages((prev) => [...prev, aiMessage])
       }
-      setMessages((prev) => [...prev, aiMessage])
-      setIsProcessing(false)
-    }, 2000)
+    } catch (error) {
+      console.error("Failed to send answer:", error)
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "Sorry, I encountered an error while processing your answer."
+      }
+      setMessages((prev) => [...prev, errorMessage])
+    } finally {
+      setIsTyping(false)
+    }
   }
 
   return (
@@ -178,7 +235,7 @@ export default function LiveInterviewPage() {
                 )}
               >
                 <div className="flex shrink-0 items-end">
-                  {message.role === "ai" ? (
+                  {message.role === "assistant" ? (
                     <div className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
                       <Bot className="size-5" />
                     </div>
@@ -196,12 +253,12 @@ export default function LiveInterviewPage() {
                       : "rounded-bl-sm bg-muted text-foreground"
                   )}
                 >
-                  {message.text}
+                  {message.content}
                 </MessageContent>
               </Message>
             ))}
 
-            {isProcessing && (
+            {isTyping && (
               <Message className="mr-auto">
                 <div className="flex shrink-0 items-end">
                   <div className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
@@ -217,73 +274,81 @@ export default function LiveInterviewPage() {
               </Message>
             )}
 
+            {isCompleted && (
+              <div className="mx-auto mt-4 rounded-md bg-muted p-4 text-center text-sm font-medium text-foreground">
+                Interview Completed. Generating Feedback...
+              </div>
+            )}
+
             <ChatContainerScrollAnchor />
           </ChatContainerContent>
         </ChatContainerRoot>
       </div>
 
       {/* Input Area */}
-      <div className="shrink-0 border-t bg-background p-4 sm:p-6">
-        <div className="mx-auto max-w-3xl">
-          <PromptInput
-            value={inputValue}
-            onValueChange={setInputValue}
-            onSubmit={handleSubmit}
-            disabled={isProcessing}
-            className="flex-col border-border pb-2 shadow-sm transition-all focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/50"
-          >
-            <PromptInputTextarea
-              placeholder={
-                isRecording
-                  ? "Listening..."
-                  : "Type your response or use voice input..."
-              }
-              className="text-base"
-            />
-            <div className="flex items-center justify-between pt-2">
-              <PromptInputActions>
-                <PromptInputAction
-                  tooltip={isRecording ? "Stop Recording" : "Use Microphone"}
-                >
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    type="button"
-                    onClick={toggleRecording}
-                    className={cn(
-                      "rounded-full transition-colors",
-                      isRecording &&
-                        "bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive"
-                    )}
+      {!isCompleted && (
+        <div className="shrink-0 border-t bg-background p-4 sm:p-6">
+          <div className="mx-auto max-w-3xl">
+            <PromptInput
+              value={inputValue}
+              onValueChange={setInputValue}
+              onSubmit={handleSubmit}
+              disabled={isTyping}
+              className="flex-col border-border pb-2 shadow-sm transition-all focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/50"
+            >
+              <PromptInputTextarea
+                placeholder={
+                  isRecording
+                    ? "Listening..."
+                    : "Type your response or use voice input..."
+                }
+                className="text-base"
+              />
+              <div className="flex items-center justify-between pt-2">
+                <PromptInputActions>
+                  <PromptInputAction
+                    tooltip={isRecording ? "Stop Recording" : "Use Microphone"}
                   >
-                    {isRecording ? (
-                      <MicOff className="size-5" />
-                    ) : (
-                      <Mic className="size-5" />
-                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      type="button"
+                      onClick={toggleRecording}
+                      className={cn(
+                        "rounded-full transition-colors",
+                        isRecording &&
+                          "bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive"
+                      )}
+                    >
+                      {isRecording ? (
+                        <MicOff className="size-5" />
+                      ) : (
+                        <Mic className="size-5" />
+                      )}
+                    </Button>
+                  </PromptInputAction>
+                </PromptInputActions>
+
+                <PromptInputAction tooltip="Send Message">
+                  <Button
+                    type="button"
+                    size="icon"
+                    onClick={handleSubmit}
+                    disabled={!inputValue.trim() || isTyping}
+                    className="size-9 rounded-full shadow-sm"
+                  >
+                    <Send className="size-4" />
                   </Button>
                 </PromptInputAction>
-              </PromptInputActions>
-
-              <PromptInputAction tooltip="Send Message">
-                <Button
-                  type="button"
-                  size="icon"
-                  onClick={handleSubmit}
-                  disabled={!inputValue.trim() || isProcessing}
-                  className="size-9 rounded-full shadow-sm"
-                >
-                  <Send className="size-4" />
-                </Button>
-              </PromptInputAction>
+              </div>
+            </PromptInput>
+            <div className="mt-2 text-center text-xs text-muted-foreground">
+              Use your microphone or type your response to interact with the AI
+              interviewer.
             </div>
-          </PromptInput>
-          <div className="mt-2 text-center text-xs text-muted-foreground">
-            Use your microphone or type your response to interact with the AI
-            interviewer.
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
