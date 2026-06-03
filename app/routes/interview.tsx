@@ -1,8 +1,17 @@
 import { useState, useEffect, useRef } from "react"
-import { useLocation } from "react-router"
-import { Mic, MicOff, Send, Bot, User, Loader2 } from "lucide-react"
+import { useNavigate, useLocation } from "react-router"
+import { Mic, MicOff, Send, Bot, User, Loader2, LogOut } from "lucide-react"
 
 import { Button } from "~/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/components/ui/dialog"
 import {
   ChatContainerRoot,
   ChatContainerContent,
@@ -31,6 +40,11 @@ export default function LiveInterviewPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isCompleted, setIsCompleted] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
+  const [isEndingSession, setIsEndingSession] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [loadingStep, setLoadingStep] = useState(0)
+
+  const navigate = useNavigate()
 
   const [inputValue, setInputValue] = useState("")
   const [isRecording, setIsRecording] = useState(false)
@@ -201,6 +215,29 @@ export default function LiveInterviewPage() {
     }
   }
 
+  const handleEndSession = async () => {
+    setIsSubmitting(true)
+    
+    // Stop recording if active
+    if (isRecording) {
+      recognitionRef.current?.stop()
+    }
+
+    const steps = [
+      "Processing Interview...",
+      "Generating Feedback...",
+      "Preparing Report..."
+    ]
+    
+    for (let i = 0; i < steps.length; i++) {
+      setLoadingStep(i)
+      await new Promise(r => setTimeout(r, 800))
+    }
+
+    // Mock API call to submit the session
+    navigate("/post-interview")
+  }
+
   return (
     <div className="flex h-screen w-full flex-col bg-background">
       {/* Header */}
@@ -218,6 +255,40 @@ export default function LiveInterviewPage() {
             Listening...
           </div>
         )}
+
+        <div className={cn("flex items-center gap-2", !isRecording && "ml-auto")}>
+          <Dialog open={isEndingSession} onOpenChange={setIsEndingSession}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <LogOut className="size-4" />
+                End Interview
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>End Interview Session?</DialogTitle>
+                <DialogDescription>
+                  Your interview will be submitted and analyzed. You can review the results once processing is complete.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="mt-4 gap-2 sm:gap-0">
+                <Button variant="ghost" onClick={() => setIsEndingSession(false)} disabled={isSubmitting}>
+                  Continue Interview
+                </Button>
+                <Button onClick={handleEndSession} disabled={isSubmitting} className="w-[140px]">
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 size-4 animate-spin" />
+                      Submit
+                    </>
+                  ) : (
+                    "End & Submit"
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </header>
 
       {/* Chat Area */}
@@ -283,6 +354,16 @@ export default function LiveInterviewPage() {
             <ChatContainerScrollAnchor />
           </ChatContainerContent>
         </ChatContainerRoot>
+
+        {/* Full-screen Loading Overlay when submitting */}
+        {isSubmitting && (
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm">
+            <Loader2 className="size-8 animate-spin text-primary mb-4" />
+            <h2 className="text-xl font-semibold tracking-tight">
+              {["Processing Interview...", "Generating Feedback...", "Preparing Report..."][loadingStep]}
+            </h2>
+          </div>
+        )}
       </div>
 
       {/* Input Area */}

@@ -10,6 +10,7 @@ export default [
   route("login", "routes/login.tsx"),
   route("forgot-password", "routes/forgot-password.tsx"),
   route("interview", "routes/interview.tsx"),
+  route("post-interview", "routes/post-interview.tsx"),
   layout("routes/app-layout.tsx", [
     route("dashboard", "routes/dashboard.tsx"),
     route("start-interview", "routes/start-interview.tsx"),
