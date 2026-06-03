@@ -14,5 +14,6 @@ export default [
     route("dashboard", "routes/dashboard.tsx"),
     route("start-interview", "routes/start-interview.tsx"),
     route("interview-history", "routes/interview-history.tsx"),
+    route("profile", "routes/profile.tsx"),
   ]),
 ] satisfies RouteConfig

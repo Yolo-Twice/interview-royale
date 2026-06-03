@@ -116,9 +116,11 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <User />
-                  <span>Profile</span>
+                <SidebarMenuButton asChild>
+                  <Link to="/profile">
+                    <User />
+                    <span>Profile</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarSettings />
