@@ -10,13 +10,12 @@ import {
   CardContent,
   CardFooter,
 } from "~/components/ui/card"
-import { Input } from "~/components/ui/input"
 import { Field, FieldLabel, FieldGroup } from "~/components/ui/field"
 
 export default function ConfigureInterviewPage() {
   const navigate = useNavigate()
   const [role, setRole] = useState("Frontend Developer")
-  const [focus, setFocus] = useState("React, Tailwind, System Design")
+  const [focus, setFocus] = useState("React")
   const [difficulty, setDifficulty] = useState("Mid-Level")
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -41,23 +40,38 @@ export default function ConfigureInterviewPage() {
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="role">Job Role</FieldLabel>
-                <Input
+                <select
                   id="role"
                   value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  placeholder="e.g. Frontend Developer"
-                  required
-                />
+                  onChange={(e) => {
+                    setRole(e.target.value);
+                    if (e.target.value === "Frontend Developer") {
+                      setFocus("React");
+                    } else if (e.target.value === "Backend Developer") {
+                      setFocus("Node.js");
+                    }
+                  }}
+                  className="flex h-9 w-full min-w-0 rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-base transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 md:text-sm"
+                >
+                  <option value="Frontend Developer">Frontend Developer</option>
+                  <option value="Backend Developer">Backend Developer</option>
+                </select>
               </Field>
               <Field>
                 <FieldLabel htmlFor="focus">Key Focus Areas</FieldLabel>
-                <Input
+                <select
                   id="focus"
                   value={focus}
                   onChange={(e) => setFocus(e.target.value)}
-                  placeholder="e.g. React, Algorithms, System Design"
-                  required
-                />
+                  className="flex h-9 w-full min-w-0 rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-base transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 md:text-sm"
+                >
+                  {role === "Frontend Developer" && (
+                    <option value="React">React</option>
+                  )}
+                  {role === "Backend Developer" && (
+                    <option value="Node.js">Node.js</option>
+                  )}
+                </select>
               </Field>
               <Field>
                 <FieldLabel htmlFor="difficulty">Difficulty</FieldLabel>
