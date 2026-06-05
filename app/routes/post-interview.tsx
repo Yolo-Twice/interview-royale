@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router"
+import { useNavigate, useSearchParams } from "react-router"
 import { 
   ArrowLeft, 
   Download, 
@@ -144,19 +144,80 @@ function getScoreColor(score: number) {
   return "text-destructive bg-destructive/10"
 }
 
+function getPerformanceLabel(score: number): ScoreTag {
+  if (score >= 80) return "Excellent"
+  if (score >= 60) return "Good"
+  if (score >= 40) return "Average"
+  return "Needs Improvement"
+}
+
 export default function PostInterviewPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [isLoading, setIsLoading] = useState(true)
   const [report, setReport] = useState<InterviewReport | null>(null)
 
   useEffect(() => {
-    // Simulate API fetch delay
-    const timer = setTimeout(() => {
-      setReport(MOCK_REPORT)
-      setIsLoading(false)
-    }, 1500)
-    return () => clearTimeout(timer)
-  }, [])
+    const fetchReport = async () => {
+      const sessionId = searchParams.get("sessionId") || sessionStorage.getItem("interviewSessionId")
+      if (!sessionId) {
+        setReport(MOCK_REPORT)
+        setIsLoading(false)
+        return
+      }
+
+      try {
+        const response = await fetch(`/api/interview-sessions/${sessionId}`)
+        const json = await response.json()
+        
+        if (json.success && json.data) {
+          const data = json.data
+          const formattedReport: InterviewReport = {
+            id: data.sessionId,
+            title: `${data.role} Interview`,
+            role: data.role,
+            difficulty: data.difficulty,
+            date: new Date(data.createdAt || Date.now()).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }),
+            duration: "Completed",
+            overallScore: (data.overallScore || 0) / 10,
+            performanceLabel: getPerformanceLabel(data.overallScore || 0),
+            aiSummary: data.summary || "No summary available.",
+            scores: {
+              technical: data.scores?.technical ?? ((data.overallScore || 0) / 10),
+              communication: data.scores?.communication ?? ((data.overallScore || 0) / 10),
+              problemSolving: data.scores?.problemSolving ?? ((data.overallScore || 0) / 10),
+              confidence: data.scores?.confidence ?? ((data.overallScore || 0) / 10),
+              systemDesign: data.scores?.systemDesign ?? ((data.overallScore || 0) / 10),
+            },
+            strengths: data.strengths || [],
+            weaknesses: data.weaknesses || [],
+            questions: (data.questionsAnswers || []).map((qa: any, index: number) => ({
+              id: `q${index}`,
+              question: qa.question,
+              score: (data.overallScore || 0) / 10,
+              summary: "Answer submitted",
+              detailedFeedback: qa.answer
+            })),
+            recommendations: [],
+            transcript: (data.questionsAnswers || []).flatMap((qa: any) => [
+              { speaker: "AI", line: qa.question },
+              { speaker: "You", line: qa.answer }
+            ])
+          }
+          setReport(formattedReport)
+        } else {
+          setReport(MOCK_REPORT)
+        }
+      } catch (error) {
+        console.error("Failed to fetch report:", error)
+        setReport(MOCK_REPORT)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchReport()
+  }, [navigate, searchParams])
 
   if (isLoading) {
     return <ReportSkeleton />

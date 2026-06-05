@@ -26,6 +26,8 @@ import {
 import { Message, MessageAvatar, MessageContent } from "~/components/ui/message"
 import { cn } from "~/lib/utils"
 
+import { useAuth } from "~/contexts/auth-provider"
+
 type ChatMessage = {
   id: string
   role: "assistant" | "user"
@@ -33,6 +35,7 @@ type ChatMessage = {
 }
 
 export default function LiveInterviewPage() {
+  const { user } = useAuth()
   const location = useLocation()
   const config = location.state as { role?: string; focus?: string; difficulty?: string } | null
 
@@ -65,11 +68,13 @@ export default function LiveInterviewPage() {
           body: JSON.stringify({
             role: config?.role || "Frontend Developer",
             keyFocusArea: config?.focus || "React",
-            difficulty: config?.difficulty || "Mid-Level"
+            difficulty: config?.difficulty || "Mid-Level",
+            userId: user?.uid || "guest"
           })
         })
         const data = await response.json()
-        setInterviewId(data.interviewId)
+        setInterviewId(data.sessionId)
+        sessionStorage.setItem("interviewSessionId", data.sessionId)
         setMessages([{
           id: Date.now().toString(),
           role: "assistant",
@@ -229,13 +234,34 @@ export default function LiveInterviewPage() {
       "Preparing Report..."
     ]
     
-    for (let i = 0; i < steps.length; i++) {
-      setLoadingStep(i)
-      await new Promise(r => setTimeout(r, 800))
-    }
+    // Start fake loading progression
+    const loadingInterval = setInterval(() => {
+      setLoadingStep(prev => prev < 2 ? prev + 1 : prev)
+    }, 1500)
 
-    // Mock API call to submit the session
-    navigate("/post-interview")
+    try {
+      const questionsAnswers = []
+      for (let i = 0; i < messages.length; i++) {
+        if (messages[i].role === 'assistant') {
+          const question = messages[i].content
+          const answer = (i + 1 < messages.length && messages[i+1].role === 'user') ? messages[i+1].content : ""
+          if (question && answer) {
+            questionsAnswers.push({ question, answer })
+          }
+        }
+      }
+
+      await fetch(`/api/interview-sessions/${interviewId}/complete`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ questionsAnswers })
+      })
+    } catch (error) {
+      console.error("Failed to complete interview:", error)
+    } finally {
+      clearInterval(loadingInterval)
+      navigate(`/post-interview?sessionId=${interviewId}`)
+    }
   }
 
   return (

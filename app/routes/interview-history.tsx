@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { ArrowUpRight, Search, Sparkles, TrendingUp } from "lucide-react"
 import { Link } from "react-router"
+import { useAuth } from "~/contexts/auth-provider"
 
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
@@ -18,12 +19,14 @@ type InterviewType =
   | "DSA"
   | "Behavioral"
   | "System Design"
-type Difficulty = "Easy" | "Medium" | "Hard"
+  | string
+type Difficulty = "Easy" | "Medium" | "Hard" | "Junior" | "Senior" | "Mid-Level" | string
 type PerformanceTag =
   | "High Score"
   | "Weak Areas"
   | "Incomplete Sessions"
   | "Strong Communication"
+  | string
 
 type InterviewSession = {
   id: string
@@ -45,159 +48,17 @@ type InterviewSession = {
   recommendation: string
 }
 
-const sessions: InterviewSession[] = [
-  {
-    id: "react-perf-01",
-    title: "React Performance Interview",
-    type: "Frontend",
-    topic: "React Hooks",
-    difficulty: "Medium",
-    dateLabel: "2 days ago",
-    dateGroup: "Last 7 days",
-    duration: "28 min",
-    score: 8.4,
-    technical: 8.2,
-    communication: 8.1,
-    confidence: 8.4,
-    weakAreas: ["Memoization", "Rendering Optimization"],
-    tags: ["High Score", "Strong Communication"],
-    completed: true,
-    transcript: [
-      { speaker: "AI", line: "Explain event delegation in React and the DOM." },
-      {
-        speaker: "You",
-        line: "Event delegation attaches one listener to a parent and uses bubbling...",
-      },
-      { speaker: "AI", line: "When would you avoid useMemo?" },
-      {
-        speaker: "You",
-        line: "When the computation is cheap and memo overhead is higher than recalculation.",
-      },
-    ],
-    recommendation:
-      "Revisit rendering bottlenecks in large component trees and profiling workflows.",
-  },
-  {
-    id: "api-design-02",
-    title: "API Design Interview",
-    type: "Backend",
-    topic: "REST + Caching",
-    difficulty: "Hard",
-    dateLabel: "6 days ago",
-    dateGroup: "Last 7 days",
-    duration: "41 min",
-    score: 7.6,
-    technical: 7.8,
-    communication: 7.3,
-    confidence: 7.2,
-    weakAreas: ["Cache Invalidation", "Versioning Strategy"],
-    tags: ["Weak Areas"],
-    completed: true,
-    transcript: [
-      { speaker: "AI", line: "How would you version breaking API changes?" },
-      {
-        speaker: "You",
-        line: "Path-based versioning with migration docs and sunset windows...",
-      },
-    ],
-    recommendation:
-      "Practice trade-offs between URL, header, and content-negotiation versioning.",
-  },
-  {
-    id: "dsa-03",
-    title: "Sliding Window Drill",
-    type: "DSA",
-    topic: "Two Pointers",
-    difficulty: "Medium",
-    dateLabel: "2 weeks ago",
-    dateGroup: "Last month",
-    duration: "24 min",
-    score: 8.0,
-    technical: 8.5,
-    communication: 7.1,
-    confidence: 7.9,
-    weakAreas: ["Edge Case Narration"],
-    tags: ["Strong Communication"],
-    completed: true,
-    transcript: [
-      { speaker: "AI", line: "What is the invariant in your sliding window?" },
-      {
-        speaker: "You",
-        line: "The window always keeps unique elements while maximizing size.",
-      },
-    ],
-    recommendation: "Narrate complexity and edge cases earlier before coding.",
-  },
-  {
-    id: "behavioral-04",
-    title: "Leadership Behavioral Round",
-    type: "Behavioral",
-    topic: "Conflict Resolution",
-    difficulty: "Easy",
-    dateLabel: "3 weeks ago",
-    dateGroup: "Last month",
-    duration: "19 min",
-    score: 6.9,
-    technical: 6.5,
-    communication: 7.5,
-    confidence: 6.8,
-    weakAreas: ["Outcome Metrics", "Story Structure"],
-    tags: ["Weak Areas"],
-    completed: true,
-    transcript: [
-      {
-        speaker: "AI",
-        line: "Describe a conflict and your resolution approach.",
-      },
-      {
-        speaker: "You",
-        line: "I aligned stakeholders by clarifying priorities and constraints...",
-      },
-    ],
-    recommendation:
-      "Use STAR more tightly and add measurable outcomes for impact.",
-  },
-  {
-    id: "system-design-05",
-    title: "Realtime Chat System Design",
-    type: "System Design",
-    topic: "WebSockets",
-    difficulty: "Hard",
-    dateLabel: "2 months ago",
-    dateGroup: "All time",
-    duration: "52 min",
-    score: 0,
-    technical: 0,
-    communication: 0,
-    confidence: 0,
-    weakAreas: ["Session was paused"],
-    tags: ["Incomplete Sessions"],
-    completed: false,
-    transcript: [
-      {
-        speaker: "AI",
-        line: "Design a scalable pub/sub layer for chat rooms.",
-      },
-      { speaker: "You", line: "I would start with partitioning by room id..." },
-    ],
-    recommendation:
-      "Resume this session and complete data consistency and failover sections.",
-  },
-]
-
 const interviewTypeFilters: Array<InterviewType | "All"> = [
   "All",
-  "Frontend",
-  "Backend",
-  "DSA",
-  "Behavioral",
-  "System Design",
+  "Frontend Developer",
+  "Backend Developer",
 ]
 const difficultyFilters: Array<Difficulty | "All"> = [
   "All",
-  "Easy",
-  "Medium",
-  "Hard",
+  "Junior",
+  "Mid-Level",
+  "Senior",
+  "Lead/Staff",
 ]
 const performanceFilters: Array<PerformanceTag | "All"> = [
   "All",
@@ -219,6 +80,62 @@ function scoreTone(score: number) {
 }
 
 export default function InterviewHistoryPage() {
+  const { user } = useAuth()
+  const [sessions, setSessions] = useState<InterviewSession[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        const response = await fetch(`/api/interview-sessions/user/${user?.uid || 'guest'}`)
+        const data = await response.json()
+        if (data.success && data.data) {
+          const mappedSessions: InterviewSession[] = data.data.map((dbSession: any) => {
+            const isCompleted = dbSession.status === 'completed'
+            const overallScore = dbSession.overallScore ? dbSession.overallScore / 10 : 0
+            
+            const date = new Date(dbSession.createdAt || Date.now())
+            const now = new Date()
+            const diffTime = Math.abs(now.getTime() - date.getTime())
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+            let dateGroup: "Last 7 days" | "Last month" | "All time" = "All time"
+            if (diffDays <= 7) dateGroup = "Last 7 days"
+            else if (diffDays <= 30) dateGroup = "Last month"
+
+            return {
+              id: dbSession.sessionId,
+              title: `${dbSession.role || 'General'} Interview`,
+              type: dbSession.role || 'General',
+              topic: dbSession.keyFocusArea || 'General',
+              difficulty: dbSession.difficulty || 'Medium',
+              dateLabel: date.toLocaleDateString(),
+              dateGroup,
+              duration: "Completed",
+              score: overallScore,
+              technical: dbSession.scores?.technical ?? overallScore,
+              communication: dbSession.scores?.communication ?? overallScore,
+              confidence: dbSession.scores?.confidence ?? overallScore,
+              weakAreas: dbSession.weaknesses || [],
+              tags: isCompleted ? (overallScore >= 8 ? ["High Score"] : ["Needs Review"]) : ["Incomplete Sessions"],
+              completed: isCompleted,
+              transcript: (dbSession.questionsAnswers || []).flatMap((qa: any) => [
+                { speaker: "AI", line: qa.question },
+                { speaker: "You", line: qa.answer }
+              ]),
+              recommendation: dbSession.summary || "Complete the session to see recommendations."
+            }
+          })
+          setSessions(mappedSessions)
+        }
+      } catch (error) {
+        console.error("Failed to fetch sessions:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchSessions()
+  }, [user])
+
   const [search, setSearch] = useState("")
   const [typeFilter, setTypeFilter] = useState<InterviewType | "All">("All")
   const [difficultyFilter, setDifficultyFilter] = useState<Difficulty | "All">(
@@ -243,7 +160,7 @@ export default function InterviewHistoryPage() {
         session.topic.toLowerCase().includes(query) ||
         session.weakAreas.some((area) => area.toLowerCase().includes(query))
 
-      const typeMatch = typeFilter === "All" || session.type === typeFilter
+      const typeMatch = typeFilter === "All" || session.type.toLowerCase().includes(typeFilter.toLowerCase())
       const difficultyMatch =
         difficultyFilter === "All" || session.difficulty === difficultyFilter
       const performanceMatch =
@@ -258,7 +175,7 @@ export default function InterviewHistoryPage() {
         dateMatch
       )
     })
-  }, [dateFilter, difficultyFilter, performanceFilter, search, typeFilter])
+  }, [dateFilter, difficultyFilter, performanceFilter, search, typeFilter, sessions])
 
   const selectedSession = useMemo(
     () =>
@@ -269,10 +186,9 @@ export default function InterviewHistoryPage() {
 
   const completedSessions = sessions.filter((session) => session.completed)
   const totalInterviews = sessions.length
-  const averageScore = (
-    completedSessions.reduce((sum, session) => sum + session.score, 0) /
-    completedSessions.length
-  ).toFixed(1)
+  const averageScore = completedSessions.length > 0 
+    ? (completedSessions.reduce((sum, session) => sum + session.score, 0) / completedSessions.length).toFixed(1)
+    : "0.0"
   const bestDomain = "Frontend"
   const trend = "+12% this month"
 
@@ -479,9 +395,11 @@ export default function InterviewHistoryPage() {
                 <div className="mt-5 flex flex-wrap gap-2">
                   <Button
                     size="sm"
-                    onClick={() => setSelectedSessionId(session.id)}
+                    asChild
                   >
-                    View Report
+                    <Link to={`/post-interview?sessionId=${session.id}`}>
+                      View Report
+                    </Link>
                   </Button>
                   <Button
                     variant="outline"
