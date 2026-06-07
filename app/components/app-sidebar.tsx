@@ -1,20 +1,15 @@
 import {
-  BarChart,
-  Bot,
-  Brain,
+  Bug,
   CircleHelp,
   Code,
-  Database,
   History,
   LayoutDashboard,
   Layers,
   MonitorPlay,
-  Network,
   Play,
   Target,
   TrendingUp,
   User,
-  Users,
 } from "lucide-react"
 import { Link } from "react-router"
 
@@ -101,9 +96,11 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <Bot />
-                  <span>AI Feedback Reports</span>
+                <SidebarMenuButton asChild>
+                  <Link to="/dashboard/report-bug">
+                    <Bug />
+                    <span>Report a Bug</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
