@@ -41,3 +41,18 @@ export async function getUserProfile(
   }
   return snapshot.data() as UserProfileDocument
 }
+
+export async function updateUserProfile(
+  userId: string,
+  data: Partial<Omit<UserProfileDocument, "createdAt" | "updatedAt">>
+): Promise<void> {
+  const ref = userDocRef(userId)
+  await setDoc(
+    ref,
+    {
+      ...data,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  )
+}

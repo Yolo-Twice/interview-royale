@@ -1,3 +1,4 @@
+import { useRef } from "react"
 import { FileText, Code, Briefcase, Globe, UploadCloud } from "lucide-react"
 import { Input } from "~/components/ui/input"
 import { Button } from "~/components/ui/button"
@@ -8,6 +9,7 @@ interface ProfessionalPresenceProps {
   formData: ProfileFormData
   isEditing: boolean
   onFormChange: (field: keyof ProfileFormData, value: any) => void
+  onResumeUpload?: (file: File) => void
 }
 
 export function ProfessionalPresence({
@@ -15,12 +17,28 @@ export function ProfessionalPresence({
   formData,
   isEditing,
   onFormChange,
+  onResumeUpload,
 }: ProfessionalPresenceProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const handleSocialChange = (network: keyof ProfileFormData["socialLinks"], value: string) => {
     onFormChange("socialLinks", {
       ...formData.socialLinks,
       [network]: value,
     })
+  }
+
+  const handleUploadClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click()
+    }
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file && onResumeUpload) {
+      onResumeUpload(file)
+    }
   }
 
   return (
@@ -61,7 +79,14 @@ export function ProfessionalPresence({
               )}
             </div>
             <div>
-              <Button variant="outline" size="sm">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept=".pdf,.doc,.docx"
+                className="hidden"
+              />
+              <Button variant="outline" size="sm" onClick={handleUploadClick}>
                 {profile.resume.status === "uploaded" ? "Update" : "Upload"}
               </Button>
             </div>

@@ -1,4 +1,5 @@
-import { MapPin, Calendar, Briefcase, GraduationCap } from "lucide-react"
+import { useRef } from "react"
+import { MapPin, Calendar, Briefcase, GraduationCap, Camera } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
@@ -9,6 +10,7 @@ interface IdentityCardProps {
   formData: ProfileFormData
   isEditing: boolean
   onFormChange: (field: keyof ProfileFormData, value: any) => void
+  onPhotoUpload?: (file: File) => void
 }
 
 export function IdentityCard({
@@ -16,7 +18,10 @@ export function IdentityCard({
   formData,
   isEditing,
   onFormChange,
+  onPhotoUpload,
 }: IdentityCardProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const initials = formData.displayName
     ? formData.displayName
         .split(" ")
@@ -26,15 +31,47 @@ export function IdentityCard({
         .toUpperCase()
     : "?"
 
+  const handlePhotoClick = () => {
+    if (isEditing && fileInputRef.current) {
+      fileInputRef.current.click()
+    }
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file && onPhotoUpload) {
+      onPhotoUpload(file)
+    }
+  }
+
   return (
     <div className="rounded-xl border bg-card p-6 shadow-sm">
       <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-        <Avatar size="lg" className="size-20 sm:size-24 border-2 border-background shadow-sm">
-          {profile.photoURL ? (
-            <AvatarImage src={profile.photoURL} alt={formData.displayName} />
-          ) : null}
-          <AvatarFallback className="text-xl sm:text-2xl">{initials}</AvatarFallback>
-        </Avatar>
+        <div 
+          className={`relative ${isEditing ? 'cursor-pointer group' : ''}`}
+          onClick={handlePhotoClick}
+        >
+          <Avatar size="lg" className="size-20 sm:size-24 border-2 border-background shadow-sm">
+            {profile.photoURL ? (
+              <AvatarImage src={profile.photoURL} alt={formData.displayName} />
+            ) : null}
+            <AvatarFallback className="text-xl sm:text-2xl">{initials}</AvatarFallback>
+          </Avatar>
+          
+          {isEditing && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+              <Camera className="size-6 text-white" />
+            </div>
+          )}
+          
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            accept="image/*" 
+            className="hidden" 
+          />
+        </div>
 
         <div className="flex-1 space-y-4">
           <div className="space-y-2">
@@ -123,7 +160,7 @@ export function IdentityCard({
 
             <span className="flex items-center gap-1.5">
               <Calendar className="size-3.5 shrink-0" />
-              Joined {profile.joinDate}
+              Joined {profile.joinDate || "Recently"}
             </span>
           </div>
         </div>

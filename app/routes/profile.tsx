@@ -1,5 +1,6 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "~/contexts/auth-provider"
+import { getUserProfile, updateUserProfile, uploadPhoto, uploadResume } from "~/lib/api/users"
 import { ProfileHeader } from "~/components/profile/profile-header"
 import { IdentityCard } from "~/components/profile/identity-card"
 import { ProfessionalPresence } from "~/components/profile/professional-presence"
@@ -13,23 +14,23 @@ import type { CandidateProfile, ProfileFormData } from "~/lib/profile-types"
 import { getUserDisplayName } from "~/lib/user-display"
 
 // Mock data initialized with the logged-in user details where possible
-const getMockProfile = (displayName: string, email: string | null): CandidateProfile => ({
+const getMockProfile = (displayName: string, email: string | null, defaultPhotoURL: string | null): CandidateProfile => ({
   displayName: displayName !== "there" ? displayName : "Alex Developer",
   targetRole: "Frontend Engineer",
   university: "University of Technology",
   bio: "Passionate frontend engineer with 3 years of experience building scalable web applications. Focused on React ecosystem, performance optimization, and creating accessible user interfaces.",
   location: "San Francisco, CA",
   joinDate: "June 2024",
-  photoURL: null,
+  photoURL: defaultPhotoURL,
   resume: {
-    status: "uploaded",
-    fileName: "Alex_Resume_2026.pdf",
-    uploadedAt: "2 days ago",
+    status: "none",
+    fileName: null,
+    uploadedAt: null,
   },
   socialLinks: {
-    github: "https://github.com/alexdev",
-    linkedin: "https://linkedin.com/in/alexdev",
-    portfolio: "https://alexdev.com",
+    github: "",
+    linkedin: "",
+    portfolio: "",
   },
   primarySkills: ["React", "TypeScript", "Next.js", "TailwindCSS"],
   technologies: ["Node.js", "GraphQL", "Jest", "Figma", "Docker"],
@@ -59,20 +60,6 @@ const getMockProfile = (displayName: string, email: string | null): CandidatePro
       earnedAt: "Jan 14, 2026",
       icon: "Flame",
     },
-    {
-      id: "top-10-percent",
-      label: "Top 10% Communicator",
-      description: "Rank in the top 10% for communication skills globally.",
-      earnedAt: null,
-      icon: "Trophy",
-    },
-    {
-      id: "speed-demon",
-      label: "Speed Demon",
-      description: "Complete a hard DSA problem in under 15 minutes.",
-      earnedAt: null,
-      icon: "Zap",
-    },
   ],
   isPublic: false,
   shareableUrl: "https://interviewroyale.com/p/alex-dev-a7b2",
@@ -85,9 +72,10 @@ const getMockProfile = (displayName: string, email: string | null): CandidatePro
 
 export default function ProfilePage() {
   const { user } = useAuth()
+  const [loading, setLoading] = useState(true)
   
   const [profile, setProfile] = useState<CandidateProfile>(
-    getMockProfile(getUserDisplayName(user), user?.email ?? null)
+    getMockProfile(getUserDisplayName(user), user?.email ?? null, user?.photoURL ?? null)
   )
   
   const [isEditing, setIsEditing] = useState(false)
@@ -106,6 +94,57 @@ export default function ProfilePage() {
     areasOfInterest: profile.areasOfInterest,
     interviewPreferences: profile.interviewPreferences,
   })
+
+  useEffect(() => {
+    async function loadProfile() {
+      if (!user) {
+        setLoading(false)
+        return
+      }
+      try {
+        const data = await getUserProfile(user.uid)
+        if (data) {
+          // Remove empty strings from data so it doesn't overwrite defaults
+          const cleanData = Object.fromEntries(
+            Object.entries(data).filter(([_, v]) => v !== "" && v !== null && (Array.isArray(v) ? v.length > 0 : true))
+          );
+          
+          const loadedProfile = {
+            ...getMockProfile(getUserDisplayName(user), user.email, user.photoURL),
+            ...cleanData,
+            // Ensure nested objects aren't lost
+            socialLinks: cleanData.socialLinks || data.socialLinks || { github: "", linkedin: "", portfolio: "" },
+            primarySkills: cleanData.primarySkills || data.primarySkills || [],
+            technologies: cleanData.technologies || data.technologies || [],
+            areasOfInterest: cleanData.areasOfInterest || data.areasOfInterest || [],
+            interviewPreferences: cleanData.interviewPreferences || data.interviewPreferences || {
+              domains: ["Frontend"],
+              difficulty: "Medium",
+              aiBehavior: "Neutral",
+            }
+          }
+          setProfile(loadedProfile as any) // Temporary cast to match mock signature if required
+          setFormData({
+            displayName: loadedProfile.displayName || "",
+            targetRole: loadedProfile.targetRole || "",
+            university: loadedProfile.university || "",
+            bio: loadedProfile.bio || "",
+            location: loadedProfile.location || "",
+            socialLinks: loadedProfile.socialLinks,
+            primarySkills: loadedProfile.primarySkills,
+            technologies: loadedProfile.technologies,
+            areasOfInterest: loadedProfile.areasOfInterest,
+            interviewPreferences: loadedProfile.interviewPreferences as any,
+          })
+        }
+      } catch (err) {
+        console.error("Failed to load profile:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadProfile()
+  }, [user])
 
   const handleFormChange = (field: keyof ProfileFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -136,13 +175,38 @@ export default function ProfilePage() {
     setIsEditing(false)
   }
 
-  const handleSave = () => {
-    // In a real app, save to backend here
-    setProfile((prev) => ({
-      ...prev,
-      ...formData,
-    }))
-    setIsEditing(false)
+  const handleSave = async () => {
+    if (!user) return
+    try {
+      await updateUserProfile(user.uid, formData)
+      setProfile((prev) => ({
+        ...prev,
+        ...formData,
+      }))
+      setIsEditing(false)
+    } catch (err) {
+      console.error("Failed to save profile:", err)
+    }
+  }
+
+  const handlePhotoUpload = async (file: File) => {
+    if (!user) return
+    try {
+      const response = await uploadPhoto(user.uid, file)
+      setProfile((prev) => ({ ...prev, photoURL: response.photoURL }))
+    } catch (err) {
+      console.error("Failed to upload photo:", err)
+    }
+  }
+
+  const handleResumeUpload = async (file: File) => {
+    if (!user) return
+    try {
+      const response = await uploadResume(user.uid, file)
+      setProfile((prev) => ({ ...prev, resume: response.resume }))
+    } catch (err) {
+      console.error("Failed to upload resume:", err)
+    }
   }
 
   return (
@@ -162,6 +226,7 @@ export default function ProfilePage() {
             formData={formData}
             isEditing={isEditing}
             onFormChange={handleFormChange}
+            onPhotoUpload={handlePhotoUpload}
           />
           
           <ProfessionalPresence
@@ -169,6 +234,7 @@ export default function ProfilePage() {
             formData={formData}
             isEditing={isEditing}
             onFormChange={handleFormChange}
+            onResumeUpload={handleResumeUpload}
           />
           
           <SkillsGrid
@@ -177,25 +243,10 @@ export default function ProfilePage() {
             isEditing={isEditing}
             onFormChange={handleFormChange}
           />
-          
-          <InterviewPreferencesSection
-            profile={profile}
-            formData={formData}
-            isEditing={isEditing}
-            onFormChange={handleFormChange}
-          />
-          
-          <AchievementsSection profile={profile} />
         </div>
 
         {/* Right Sidebar Column */}
         <div className="flex flex-col gap-6">
-          <PublicVisibility 
-            profile={profile} 
-            isEditing={isEditing} 
-            onToggleVisibility={handleToggleVisibility} 
-          />
-          
           {/* We pass the formData to RecruiterCard when editing so the preview updates in real-time */}
           <RecruiterCard 
             profile={isEditing ? { ...profile, ...formData } : profile} 

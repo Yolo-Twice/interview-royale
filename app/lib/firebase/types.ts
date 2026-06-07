@@ -44,6 +44,22 @@ export type UserProfileDocument = {
   email: string | null
   photoURL: string | null
   targetRole: string | null
+  university?: string
+  bio?: string
+  location?: string
+  socialLinks?: {
+    github: string
+    linkedin: string
+    portfolio: string
+  }
+  primarySkills?: string[]
+  technologies?: string[]
+  areasOfInterest?: string[]
+  interviewPreferences?: {
+    domains: string[]
+    difficulty: string
+    aiBehavior: string
+  }
   createdAt: Timestamp
   updatedAt: Timestamp
 }
