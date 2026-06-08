@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react"
 import { useAuth } from "~/contexts/auth-provider"
-import { getUserProfile, updateUserProfile, uploadPhoto, uploadResume } from "~/lib/api/users"
+
+import {
+  getUserProfile,
+  updateUserProfile,
+  uploadPhoto,
+  uploadResume,
+  getResume,
+  removeResume,
+} from "~/lib/api/users"
 import { ProfileHeader } from "~/components/profile/profile-header"
 import { IdentityCard } from "~/components/profile/identity-card"
 import { ProfessionalPresence } from "~/components/profile/professional-presence"
@@ -201,13 +209,88 @@ export default function ProfilePage() {
 
   const handleResumeUpload = async (file: File) => {
     if (!user) return
+
+    // Client-side validation
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    const allowedExt = [".pdf", ".doc", ".docx"]
+    const name = file.name.toLowerCase()
+    const hasValidExt = allowedExt.some((ext) => name.endsWith(ext))
+    if (!hasValidExt) {
+      setUploadError("Invalid file type. Please upload a PDF or Word document (.pdf, .doc, .docx).")
+      return
+    }
+    if (file.size > maxSize) {
+      setUploadError("File is too large. Maximum size is 5MB.")
+      return
+    }
+
+    setUploadError(null)
+
+    // Use profile.userId if available, otherwise fallback to Firebase uid
+    const apiUserId = (profile as any).userId || user.uid
+
     try {
-      const response = await uploadResume(user.uid, file)
-      setProfile((prev) => ({ ...prev, resume: response.resume }))
-    } catch (err) {
+      setProfile((prev) => ({ ...prev, resume: { ...(prev.resume || {}), status: "uploading" } as any }))
+
+      await uploadResume(apiUserId, file)
+
+      // Refresh resume info from backend
+      const resumeResp = await getResume(apiUserId)
+      if (resumeResp && resumeResp.resume) {
+        setProfile((prev) => ({ ...prev, resume: resumeResp.resume }))
+      }
+    } catch (err: any) {
       console.error("Failed to upload resume:", err)
+      setUploadError(err?.message || "Upload failed. Please try again.")
+      setProfile((prev) => ({ ...prev, resume: { ...(prev.resume || {}), status: "none" } as any }))
     }
   }
+
+  const handleResumeRemove = async () => {
+    if (!user) return
+    if (!confirm("Remove your uploaded resume? This cannot be undone.")) {
+      return
+    }
+
+    setUploadError(null)
+    const apiUserId = (profile as any).userId || user.uid
+
+    try {
+      await removeResume(apiUserId)
+      setProfile((prev) => ({
+        ...prev,
+        resume: {
+          status: "none",
+          fileName: null,
+          uploadedAt: null,
+          url: null,
+        },
+      } as any))
+    } catch (err: any) {
+      console.error("Failed to remove resume:", err)
+      setUploadError(err?.message || "Could not remove resume. Please try again.")
+    }
+  }
+
+  const [uploadError, setUploadError] = useState<string | null>(null)
+
+  // Fetch resume info separately so the UI can reflect uploaded resume
+  useEffect(() => {
+    async function loadResume() {
+      if (!user) return
+      const apiUserId = (profile as any).userId || user.uid
+      try {
+        const resumeResp = await getResume(apiUserId)
+        if (resumeResp && resumeResp.resume) {
+          setProfile((prev) => ({ ...prev, resume: resumeResp.resume }))
+        }
+      } catch (err) {
+        // non-fatal - resume may not exist
+        console.debug("No resume info available:", err)
+      }
+    }
+    loadResume()
+  }, [user])
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-6 sm:p-8">
@@ -235,6 +318,8 @@ export default function ProfilePage() {
             isEditing={isEditing}
             onFormChange={handleFormChange}
             onResumeUpload={handleResumeUpload}
+            onResumeRemove={handleResumeRemove}
+            uploadError={uploadError}
           />
           
           <SkillsGrid

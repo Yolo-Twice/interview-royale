@@ -10,6 +10,8 @@ interface ProfessionalPresenceProps {
   isEditing: boolean
   onFormChange: (field: keyof ProfileFormData, value: any) => void
   onResumeUpload?: (file: File) => void
+  onResumeRemove?: () => void
+  uploadError?: string | null
 }
 
 export function ProfessionalPresence({
@@ -18,6 +20,8 @@ export function ProfessionalPresence({
   isEditing,
   onFormChange,
   onResumeUpload,
+  onResumeRemove,
+  uploadError,
 }: ProfessionalPresenceProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -78,7 +82,7 @@ export function ProfessionalPresence({
                 </>
               )}
             </div>
-            <div>
+            <div className="flex items-center gap-2">
               <input
                 type="file"
                 ref={fileInputRef}
@@ -86,11 +90,38 @@ export function ProfessionalPresence({
                 accept=".pdf,.doc,.docx"
                 className="hidden"
               />
-              <Button variant="outline" size="sm" onClick={handleUploadClick}>
-                {profile.resume.status === "uploaded" ? "Update" : "Upload"}
-              </Button>
+              {profile.resume.status === "uploaded" ? (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => profile.resume.url && window.open(profile.resume.url, "_blank")}
+                  >
+                    View Resume
+                  </Button>
+                  <Button size="sm" onClick={handleUploadClick}>
+                    Replace Resume
+                  </Button>
+                  {onResumeRemove ? (
+                    <Button variant="destructive" size="sm" onClick={onResumeRemove}>
+                      Remove
+                    </Button>
+                  ) : null}
+                </>
+              ) : profile.resume.status === "uploading" ? (
+                <Button size="sm" disabled>
+                  Uploading...
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" onClick={handleUploadClick}>
+                  Upload
+                </Button>
+              )}
             </div>
           </div>
+          {uploadError ? (
+            <p className="mt-2 text-sm text-destructive">{uploadError}</p>
+          ) : null}
         </div>
 
         {/* Social Links */}

@@ -12,6 +12,8 @@ export interface ResumeInfo {
   status: ResumeStatus
   fileName: string | null
   uploadedAt: string | null
+  storedFileName?: string | null
+  url?: string | null
 }
 
 export type InterviewDomain =
