@@ -246,7 +246,7 @@ export default function PostInterviewPage() {
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-8 px-6 py-8 sm:px-8">
         
         {/* SECTION 1: Hero Summary */}
-        <section className="flex flex-col gap-6 rounded-2xl border bg-card p-6 shadow-sm sm:flex-row sm:items-start sm:p-8">
+        <section className="flex flex-col gap-6 rounded-xl border bg-card p-6 shadow-sm sm:flex-row sm:items-start sm:p-8">
           <div className="flex-1 space-y-4">
             <div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -258,15 +258,15 @@ export default function PostInterviewPage() {
                 <span>•</span>
                 <span className="flex items-center gap-1"><Clock className="size-3" /> {report.duration}</span>
               </div>
-              <h1 className="mt-3 text-3xl font-bold tracking-tight">{report.title}</h1>
+              <h1 className="mt-4 text-3xl font-bold tracking-tight">{report.title}</h1>
             </div>
             <p className="max-w-2xl text-muted-foreground leading-relaxed">
               {report.aiSummary}
             </p>
           </div>
-          <div className="flex shrink-0 flex-col items-center justify-center rounded-xl bg-muted/50 p-6 min-w-[160px]">
+          <div className="flex shrink-0 flex-col items-center justify-center rounded-xl bg-muted/30 p-6 min-w-[160px]">
             <p className="text-sm font-medium text-muted-foreground">Overall Score</p>
-            <p className="mt-1 flex items-baseline gap-1 text-5xl font-bold tracking-tighter">
+            <p className="mt-2 flex items-baseline gap-1 text-5xl font-bold tracking-tighter">
               {report.overallScore}<span className="text-2xl text-muted-foreground">/10</span>
             </p>
             <Badge className={`mt-3 border-none ${getScoreColor(report.overallScore)}`}>
@@ -287,16 +287,16 @@ export default function PostInterviewPage() {
           </div>
         </section>
 
-        <div className="grid gap-8 md:grid-cols-2">
+        <div className="grid gap-8 md:grid-cols-2 pt-4">
           {/* SECTION 3: Strengths */}
-          <section className="rounded-2xl border bg-card p-6 shadow-sm">
+          <section>
             <h3 className="flex items-center gap-2 text-lg font-semibold tracking-tight text-emerald-600">
               <CheckCircle2 className="size-5" />
               Key Strengths
             </h3>
             <ul className="mt-4 space-y-3">
               {report.strengths.map((strength, i) => (
-                <li key={i} className="flex items-start gap-3 rounded-lg border border-emerald-100 bg-emerald-50/50 p-3 text-sm dark:border-emerald-900/50 dark:bg-emerald-900/10">
+                <li key={i} className="flex items-start gap-3 rounded-lg bg-emerald-50/50 p-3 text-sm dark:bg-emerald-900/10">
                   <CheckCircle2 className="mt-0.5 size-4 text-emerald-600 shrink-0" />
                   <span>{strength}</span>
                 </li>
@@ -305,14 +305,14 @@ export default function PostInterviewPage() {
           </section>
 
           {/* SECTION 4: Areas For Improvement */}
-          <section className="rounded-2xl border bg-card p-6 shadow-sm">
+          <section>
             <h3 className="flex items-center gap-2 text-lg font-semibold tracking-tight text-amber-600">
               <ShieldAlert className="size-5" />
               Areas For Improvement
             </h3>
             <ul className="mt-4 space-y-3">
               {report.weaknesses.map((weakness, i) => (
-                <li key={i} className="flex items-start gap-3 rounded-lg border border-amber-100 bg-amber-50/50 p-3 text-sm dark:border-amber-900/50 dark:bg-amber-900/10">
+                <li key={i} className="flex items-start gap-3 rounded-lg bg-amber-50/50 p-3 text-sm dark:bg-amber-900/10">
                   <XCircle className="mt-0.5 size-4 text-amber-600 shrink-0" />
                   <span>{weakness}</span>
                 </li>
@@ -322,24 +322,28 @@ export default function PostInterviewPage() {
         </div>
 
         {/* SECTION 5: Question Breakdown */}
-        <section className="rounded-2xl border bg-card p-6 shadow-sm">
+        <section className="pt-4">
           <h2 className="text-xl font-semibold tracking-tight">Question Breakdown</h2>
           <div className="mt-6">
-            <Accordion type="multiple" className="w-full space-y-4">
+            <Accordion type="multiple" className="border-none rounded-none shadow-none w-full flex flex-col">
               {report.questions.map((q) => (
-                <AccordionItem key={q.id} value={q.id} className="rounded-lg border bg-background px-4 py-1 data-[state=open]:shadow-sm">
-                  <AccordionTrigger className="hover:no-underline py-3">
+                <AccordionItem 
+                  key={q.id} 
+                  value={q.id} 
+                  className="border-b border-border/40 last:border-b-0 bg-transparent data-open:bg-transparent px-0 py-1 shadow-none"
+                >
+                  <AccordionTrigger className="px-0 py-4 hover:no-underline border-none">
                     <div className="flex flex-1 items-center justify-between pr-4 text-left">
-                      <p className="font-medium pr-4">{q.question}</p>
+                      <p className="font-medium text-base text-foreground/90 pr-4">{q.question}</p>
                       <Badge variant="outline" className={`shrink-0 ${getScoreColor(q.score)}`}>
                         {q.score.toFixed(1)}
                       </Badge>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="pb-4 pt-2">
-                    <div className="space-y-3 text-sm">
+                  <AccordionContent className="px-0 pb-6 pt-0">
+                    <div className="space-y-3 text-sm text-muted-foreground max-w-3xl">
                       <p className="font-medium text-foreground">{q.summary}</p>
-                      <p className="text-muted-foreground leading-relaxed">{q.detailedFeedback}</p>
+                      <p className="leading-relaxed">{q.detailedFeedback}</p>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -353,7 +357,7 @@ export default function PostInterviewPage() {
           <h2 className="text-xl font-semibold tracking-tight">Recommended Practice</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {report.recommendations.map((rec) => (
-              <div key={rec.id} className="flex items-center justify-between rounded-xl border bg-card p-5 shadow-sm transition hover:border-primary/40">
+              <div key={rec.id} className="flex items-center justify-between rounded-xl bg-muted/30 p-5 transition hover:bg-muted/50">
                 <div>
                   <h4 className="font-medium">{rec.topic}</h4>
                   <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
@@ -370,25 +374,29 @@ export default function PostInterviewPage() {
         </section>
 
         {/* SECTION 7: Transcript Preview */}
-        <section className="rounded-2xl border bg-card p-6 shadow-sm">
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="transcript" className="border-none">
-              <AccordionTrigger className="hover:no-underline py-0">
+        <section className="pt-4">
+          <Accordion type="single" collapsible className="border-none rounded-none shadow-none w-full">
+            <AccordionItem value="transcript" className="border-none bg-transparent data-open:bg-transparent px-0 shadow-none">
+              <AccordionTrigger className="px-0 hover:no-underline py-2 border-none">
                 <div className="flex items-center gap-2">
                   <BookOpen className="size-5 text-primary" />
                   <h2 className="text-xl font-semibold tracking-tight">Interview Transcript</h2>
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="pt-6 pb-2">
-                <div className="space-y-4 rounded-xl border bg-muted/30 p-4">
+              <AccordionContent className="px-0 pt-6 pb-2">
+                <div className="space-y-6 pl-4 border-l border-border/50">
                   {report.transcript.map((msg, i) => (
-                    <div key={i} className="text-sm">
-                      <span className={`font-semibold mr-2 ${msg.speaker === 'AI' ? 'text-primary' : 'text-foreground'}`}>
-                        {msg.speaker}:
-                      </span>
-                      <span className="text-muted-foreground leading-relaxed">
+                    <div key={i} className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-semibold uppercase tracking-wider ${
+                          msg.speaker === 'AI' ? 'text-primary' : 'text-foreground/80'
+                        }`}>
+                          {msg.speaker}
+                        </span>
+                      </div>
+                      <p className="text-muted-foreground leading-relaxed text-sm max-w-3xl">
                         {msg.line}
-                      </span>
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -421,8 +429,8 @@ function ScoreCard({ icon: Icon, title, score }: { icon: any, title: string, sco
   const percentage = (score / 10) * 100
   
   return (
-    <div className="rounded-xl border bg-card p-4 shadow-sm">
-      <div className="flex items-center gap-2 text-muted-foreground mb-3">
+    <div className="rounded-xl bg-muted/30 p-4">
+      <div className="flex items-center gap-2 text-muted-foreground mb-4">
         <Icon className="size-4" />
         <span className="text-xs font-medium">{title}</span>
       </div>

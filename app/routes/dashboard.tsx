@@ -267,7 +267,7 @@ export default function Dashboard() {
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-6 shadow-sm">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <div className="mb-3 inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+            <div className="mb-4 inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
               Recommended Practice
             </div>
             <h2 className="text-2xl font-bold">
@@ -277,7 +277,7 @@ export default function Dashboard() {
               <span className="flex items-center gap-1">
                 <Zap className="size-3" /> Difficulty: {recommendedTopic?.difficulty || "Medium"}
               </span>
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-2">
                 <Clock className="size-3" /> ~20 mins
               </span>
             </div>
@@ -399,11 +399,11 @@ export default function Dashboard() {
           <table className="w-full text-left text-sm">
             <thead className="bg-muted/50 text-xs text-muted-foreground uppercase">
               <tr>
-                <th className="px-6 py-3 font-medium">Role</th>
-                <th className="px-6 py-3 font-medium">Date</th>
-                <th className="px-6 py-3 font-medium">Duration</th>
-                <th className="px-6 py-3 font-medium">Score</th>
-                <th className="px-6 py-3 text-right font-medium">Action</th>
+                <th className="px-6 py-4 font-medium">Role</th>
+                <th className="px-6 py-4 font-medium">Date</th>
+                <th className="px-6 py-4 font-medium">Duration</th>
+                <th className="px-6 py-4 font-medium">Score</th>
+                <th className="px-6 py-4 text-right font-medium">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y">

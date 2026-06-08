@@ -72,7 +72,7 @@ export function SidebarUser() {
       <SidebarMenu>
         <SidebarMenuItem>
           <div className="flex w-full items-center gap-3 rounded-lg px-2 py-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-            <Avatar size="lg" className="size-9">
+            <Avatar size="lg" className="size-9 shrink-0">
               {user.photoURL ? (
                 <AvatarImage
                   src={user.photoURL}
