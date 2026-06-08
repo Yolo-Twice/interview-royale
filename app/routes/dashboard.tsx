@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react"
+import { Link, useNavigate } from "react-router"
 import {
   Activity,
   ArrowRight,
@@ -7,14 +9,107 @@ import {
   MessageSquare,
   Play,
   TrendingUp,
+  TrendingDown,
+  Trophy,
   Zap,
 } from "lucide-react"
 import { Button } from "~/components/ui/button"
 import { useAuth } from "~/contexts/auth-provider"
 import { getPersonalizedGreeting } from "~/lib/user-display"
+import { getUserProfile } from "~/lib/api/users"
 
 export default function Dashboard() {
   const { user } = useAuth()
+  const navigate = useNavigate()
+  const [profileData, setProfileData] = useState<{ targetRole?: string; currentStreak?: number } | null>(null)
+  const [stats, setStats] = useState({
+    averageScore: 0,
+    totalInterviews: 0,
+    bestSkill: { name: "-", score: 0 },
+    worstSkill: { name: "-", score: 0 },
+  })
+  const [recentInterviews, setRecentInterviews] = useState<any[]>([])
+  const [isLoadingStats, setIsLoadingStats] = useState(true)
+
+  useEffect(() => {
+    async function fetchData() {
+      if (!user) return
+      
+      try {
+        const profile = await getUserProfile(user.uid).catch(() => null)
+        if (profile) {
+          setProfileData({
+            targetRole: profile.targetRole,
+            currentStreak: profile.currentStreak
+          })
+        }
+      } catch (e) {
+        console.error("Failed to fetch profile", e)
+      }
+
+      try {
+        const response = await fetch(`/api/interview-sessions/user/${user.uid}`)
+        if (response.ok) {
+          const result = await response.json()
+          if (result.success && result.data) {
+            const sessions = result.data;
+            const completed = sessions.filter((s: any) => s.status === 'completed');
+            
+            let avgScore = 0;
+            let bSkill = { name: "-", score: 0 };
+            let wSkill = { name: "-", score: 0 };
+
+            if (completed.length > 0) {
+              const totalScore = completed.reduce((sum: number, s: any) => sum + (s.overallScore || 0), 0);
+              avgScore = Math.round(totalScore / completed.length) / 10;
+
+              const skillSums = {
+                'Technical': 0,
+                'Communication': 0,
+                'Problem Solving': 0,
+                'Confidence': 0,
+                'System Design': 0
+              };
+
+              completed.forEach((s: any) => {
+                if (s.scores) {
+                  skillSums['Technical'] += s.scores.technical || 0;
+                  skillSums['Communication'] += s.scores.communication || 0;
+                  skillSums['Problem Solving'] += s.scores.problemSolving || 0;
+                  skillSums['Confidence'] += s.scores.confidence || 0;
+                  skillSums['System Design'] += s.scores.systemDesign || 0;
+                }
+              });
+
+              const skillAverages = Object.entries(skillSums).map(([name, sum]) => ({
+                name,
+                score: sum / completed.length
+              }));
+
+              skillAverages.sort((a, b) => a.score - b.score);
+              
+              wSkill = { name: skillAverages[0].name, score: Math.round(skillAverages[0].score * 10) / 10 };
+              bSkill = { name: skillAverages[skillAverages.length - 1].name, score: Math.round(skillAverages[skillAverages.length - 1].score * 10) / 10 };
+            }
+
+            setStats({
+              averageScore: avgScore,
+              totalInterviews: completed.length,
+              bestSkill: bSkill,
+              worstSkill: wSkill
+            });
+
+            setRecentInterviews(sessions.slice(0, 5));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch interview history:", error)
+      } finally {
+        setIsLoadingStats(false)
+      }
+    }
+    fetchData()
+  }, [user])
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-6 sm:p-8">
@@ -27,19 +122,17 @@ export default function Dashboard() {
           <p className="mt-1 text-muted-foreground">
             Target Role:{" "}
             <span className="font-medium text-foreground">
-              Frontend Engineer
+              {profileData?.targetRole || "Not Set"}
             </span>
           </p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            You are on a 3-day streak! Keep up the momentum to improve your
-            React skills.
-          </p>
+          {profileData?.currentStreak !== undefined && profileData.currentStreak > 0 && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              You are on a {profileData.currentStreak}-day streak! Keep up the momentum to improve your skills.
+            </p>
+          )}
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
-          <Button variant="outline" className="w-full sm:w-auto">
-            Continue Last Session
-          </Button>
-          <Button className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto" onClick={() => navigate("/start-interview")}>
             <Play className="mr-2 size-4" /> Start Interview
           </Button>
         </div>
@@ -53,13 +146,13 @@ export default function Dashboard() {
             <h3 className="text-sm font-medium">Average Score</h3>
           </div>
           <p className="mt-4 text-3xl font-bold">
-            8.4
+            {isLoadingStats ? "-" : stats.averageScore}
             <span className="text-sm font-normal text-muted-foreground">
               /10
             </span>
           </p>
-          <p className="mt-1 flex items-center text-xs text-green-500">
-            <TrendingUp className="mr-1 size-3" /> +0.2 from last week
+          <p className="mt-1 flex items-center text-xs text-muted-foreground">
+            Lifetime average
           </p>
         </div>
         <div className="rounded-xl border bg-card p-6 shadow-sm">
@@ -67,34 +160,34 @@ export default function Dashboard() {
             <Activity className="size-4 text-primary" />
             <h3 className="text-sm font-medium">Interviews</h3>
           </div>
-          <p className="mt-4 text-3xl font-bold">12</p>
+          <p className="mt-4 text-3xl font-bold">{isLoadingStats ? "-" : stats.totalInterviews}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            4 completed this week
+            Total completed
           </p>
         </div>
         <div className="rounded-xl border bg-card p-6 shadow-sm">
           <div className="flex items-center gap-2">
-            <Zap className="size-4 text-primary" />
-            <h3 className="text-sm font-medium">Streak</h3>
+            <Trophy className="size-4 text-primary" />
+            <h3 className="text-sm font-medium">Best Skill</h3>
           </div>
-          <p className="mt-4 text-3xl font-bold">
-            3
-            <span className="text-sm font-normal text-muted-foreground">
-              {" "}
-              days
-            </span>
+          <p className="mt-4 text-2xl font-bold truncate">
+            {isLoadingStats ? "-" : stats.bestSkill.name}
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Next milestone: 5 days
+          <p className="mt-1 flex items-center text-xs text-green-500">
+            <TrendingUp className="mr-1 size-3" /> {isLoadingStats ? "-" : stats.bestSkill.score}/10 avg score
           </p>
         </div>
         <div className="rounded-xl border bg-card p-6 shadow-sm">
           <div className="flex items-center gap-2">
-            <MessageSquare className="size-4 text-primary" />
-            <h3 className="text-sm font-medium">Communication</h3>
+            <TrendingDown className="size-4 text-primary" />
+            <h3 className="text-sm font-medium">Worst Skill</h3>
           </div>
-          <p className="mt-4 text-3xl font-bold">Excellent</p>
-          <p className="mt-1 text-xs text-muted-foreground">Top 15% of peers</p>
+          <p className="mt-4 text-2xl font-bold truncate">
+            {isLoadingStats ? "-" : stats.worstSkill.name}
+          </p>
+          <p className="mt-1 flex items-center text-xs text-orange-500">
+            <TrendingDown className="mr-1 size-3" /> {isLoadingStats ? "-" : stats.worstSkill.score}/10 avg score
+          </p>
         </div>
       </div>
 
@@ -268,53 +361,53 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              <tr className="bg-card transition-colors hover:bg-muted/50">
-                <td className="px-6 py-4 font-medium">Frontend Engineer</td>
-                <td className="px-6 py-4 text-muted-foreground">Today</td>
-                <td className="px-6 py-4 text-muted-foreground">27 min</td>
-                <td className="px-6 py-4">
-                  <span className="inline-flex items-center rounded-md bg-green-500/10 px-2 py-1 text-xs font-medium text-green-500 ring-1 ring-green-500/20 ring-inset">
-                    8.2/10
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <Button variant="ghost" size="sm">
-                    View Report <ChevronRight className="ml-1 size-3" />
-                  </Button>
-                </td>
-              </tr>
-              <tr className="bg-card transition-colors hover:bg-muted/50">
-                <td className="px-6 py-4 font-medium">Full Stack Developer</td>
-                <td className="px-6 py-4 text-muted-foreground">2 days ago</td>
-                <td className="px-6 py-4 text-muted-foreground">45 min</td>
-                <td className="px-6 py-4">
-                  <span className="inline-flex items-center rounded-md bg-green-500/10 px-2 py-1 text-xs font-medium text-green-500 ring-1 ring-green-500/20 ring-inset">
-                    7.8/10
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <Button variant="ghost" size="sm">
-                    View Report <ChevronRight className="ml-1 size-3" />
-                  </Button>
-                </td>
-              </tr>
-              <tr className="bg-card transition-colors hover:bg-muted/50">
-                <td className="px-6 py-4 font-medium">
-                  System Design (Backend)
-                </td>
-                <td className="px-6 py-4 text-muted-foreground">Last week</td>
-                <td className="px-6 py-4 text-muted-foreground">30 min</td>
-                <td className="px-6 py-4">
-                  <span className="inline-flex items-center rounded-md bg-orange-500/10 px-2 py-1 text-xs font-medium text-orange-500 ring-1 ring-orange-500/20 ring-inset">
-                    6.5/10
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <Button variant="ghost" size="sm">
-                    View Report <ChevronRight className="ml-1 size-3" />
-                  </Button>
-                </td>
-              </tr>
+              {recentInterviews.length > 0 ? (
+                recentInterviews.map((session: any) => (
+                  <tr key={session.sessionId} className="bg-card transition-colors hover:bg-muted/50">
+                    <td className="px-6 py-4 font-medium">{session.role}</td>
+                    <td className="px-6 py-4 text-muted-foreground">
+                      {new Date(session.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 text-muted-foreground">
+                      {session.status === 'completed' ? 'Completed' : 'Active'}
+                    </td>
+                    <td className="px-6 py-4">
+                      {session.status === 'completed' ? (
+                        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
+                          (session.overallScore || 0) >= 80 ? 'bg-green-500/10 text-green-500 ring-green-500/20' : 
+                          (session.overallScore || 0) >= 70 ? 'bg-orange-500/10 text-orange-500 ring-orange-500/20' : 
+                          'bg-red-500/10 text-red-500 ring-red-500/20'
+                        }`}>
+                          {((session.overallScore || 0) / 10).toFixed(1)}/10
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      {session.status === 'completed' ? (
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link to={`/post-interview?sessionId=${session.sessionId}`}>
+                            View Report <ChevronRight className="ml-1 size-3" />
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link to={`/interview/${session.sessionId}`}>
+                            Continue <ChevronRight className="ml-1 size-3" />
+                          </Link>
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
+                    No interviews found. Start one today!
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
