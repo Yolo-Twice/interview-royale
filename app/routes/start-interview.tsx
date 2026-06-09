@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router"
 import { Play } from "lucide-react"
 import { Button } from "~/components/ui/button"
@@ -11,12 +11,45 @@ import {
   CardFooter,
 } from "~/components/ui/card"
 import { Field, FieldLabel, FieldGroup } from "~/components/ui/field"
+import { useAuth } from "~/contexts/auth-provider"
+import { getUserProfile } from "~/lib/api/users"
+import { getProfileFocusAreas } from "~/lib/profile-skill-options"
 
 export default function ConfigureInterviewPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [role, setRole] = useState("Frontend Developer")
-  const [focus, setFocus] = useState("React")
+  const [focus, setFocus] = useState("")
   const [difficulty, setDifficulty] = useState("Mid-Level")
+  const [focusOptions, setFocusOptions] = useState<string[]>([])
+  const [loadingFocusOptions, setLoadingFocusOptions] = useState(true)
+
+  useEffect(() => {
+    async function loadProfileFocusAreas() {
+      if (!user) {
+        setFocusOptions([])
+        setLoadingFocusOptions(false)
+        return
+      }
+
+      try {
+        const profile = await getUserProfile(user.uid)
+        const nextOptions = getProfileFocusAreas(profile?.primarySkills, profile?.technologies)
+        setFocusOptions(nextOptions)
+        setFocus((current) => (current && nextOptions.includes(current) ? current : nextOptions[0] ?? ""))
+      } catch (error) {
+        console.error("Failed to load profile focus areas:", error)
+        setFocusOptions([])
+        setFocus("")
+      } finally {
+        setLoadingFocusOptions(false)
+      }
+    }
+
+    void loadProfileFocusAreas()
+  }, [user])
+
+  const hasFocusOptions = focusOptions.length > 0
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,12 +77,8 @@ export default function ConfigureInterviewPage() {
                   id="role"
                   value={role}
                   onChange={(e) => {
-                    setRole(e.target.value);
-                    if (e.target.value === "Frontend Developer") {
-                      setFocus("React");
-                    } else if (e.target.value === "Backend Developer") {
-                      setFocus("Node.js");
-                    }
+                    setRole(e.target.value)
+                    setFocus((current) => (focusOptions.includes(current) ? current : focusOptions[0] ?? ""))
                   }}
                   className="flex h-9 w-full min-w-0 rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-base transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 md:text-sm"
                 >
@@ -59,19 +88,40 @@ export default function ConfigureInterviewPage() {
               </Field>
               <Field>
                 <FieldLabel htmlFor="focus">Key Focus Areas</FieldLabel>
-                <select
-                  id="focus"
-                  value={focus}
-                  onChange={(e) => setFocus(e.target.value)}
-                  className="flex h-9 w-full min-w-0 rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-base transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 md:text-sm"
-                >
-                  {role === "Frontend Developer" && (
-                    <option value="React">React</option>
-                  )}
-                  {role === "Backend Developer" && (
-                    <option value="Node.js">Node.js</option>
-                  )}
-                </select>
+                {loadingFocusOptions ? (
+                  <p className="text-sm text-muted-foreground">Loading your profile focus areas…</p>
+                ) : (
+                  <>
+                    {hasFocusOptions ? (
+                      <select
+                        id="focus"
+                        value={focus}
+                        onChange={(e) => setFocus(e.target.value)}
+                        className="flex h-9 w-full min-w-0 rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-base transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 md:text-sm"
+                      >
+                        {focusOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <>
+                        <select
+                          id="focus"
+                          value=""
+                          disabled
+                          className="flex h-9 w-full min-w-0 rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-base text-muted-foreground transition-[color,box-shadow,background-color] outline-none md:text-sm"
+                        >
+                          <option value="">Select focus areas after adding profile skills</option>
+                        </select>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Add skills and technologies to your profile to configure interview focus areas.
+                        </p>
+                      </>
+                    )}
+                  </>
+                )}
               </Field>
               <Field>
                 <FieldLabel htmlFor="difficulty">Difficulty</FieldLabel>

@@ -1,7 +1,15 @@
 import { useState } from "react"
 import { Plus, X } from "lucide-react"
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "~/components/ui/combobox"
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
+import { PRIMARY_SKILL_OPTIONS, TECHNOLOGY_OPTIONS } from "~/lib/profile-skill-options"
 import type { CandidateProfile, ProfileFormData } from "~/lib/profile-types"
 
 interface SkillsGridProps {
@@ -30,6 +38,14 @@ export function SkillsGrid({
     setNewSkillInput((prev) => ({ ...prev, [field]: "" }))
   }
 
+  const handleComboboxChange = (
+    field: "primarySkills" | "technologies",
+    nextValue: string[]
+  ) => {
+    const normalizedValue = Array.from(new Set((nextValue || []).filter(Boolean)))
+    onFormChange(field, normalizedValue)
+  }
+
   const handleRemoveSkill = (field: "primarySkills" | "technologies" | "areasOfInterest", indexToRemove: number) => {
     onFormChange(
       field,
@@ -48,7 +64,10 @@ export function SkillsGrid({
     title: string,
     field: "primarySkills" | "technologies" | "areasOfInterest",
     placeholder: string
-  ) => (
+  ) => {
+    const availableOptions = field === "primarySkills" ? PRIMARY_SKILL_OPTIONS : field === "technologies" ? TECHNOLOGY_OPTIONS : []
+
+    return (
     <div>
       <label className="mb-2 block text-sm font-medium">{title}</label>
       <div className="flex flex-wrap items-center gap-2">
@@ -71,7 +90,35 @@ export function SkillsGrid({
           </span>
         ))}
 
-        {isEditing && (
+        {isEditing && field !== "areasOfInterest" && (
+          <div className="w-full max-w-[18rem]">
+            <Combobox
+              multiple
+              value={formData[field] as string[]}
+              onValueChange={(value) => handleComboboxChange(field as "primarySkills" | "technologies", value as string[])}
+              items={availableOptions}
+            >
+              <ComboboxInput
+                placeholder={placeholder}
+                showTrigger
+                showClear
+                readOnly
+                className="h-7 w-full rounded-md px-2 text-xs"
+              />
+              <ComboboxContent>
+                <ComboboxList>
+                  {availableOptions.map((option) => (
+                    <ComboboxItem key={option} value={option}>
+                      {option}
+                    </ComboboxItem>
+                  ))}
+                </ComboboxList>
+              </ComboboxContent>
+            </Combobox>
+          </div>
+        )}
+
+        {isEditing && field === "areasOfInterest" && (
           <div className="flex items-center gap-1">
             <Input
               value={newSkillInput[field]}
@@ -98,7 +145,8 @@ export function SkillsGrid({
         )}
       </div>
     </div>
-  )
+    )
+  }
 
   return (
     <div className="rounded-xl border bg-card p-6 shadow-sm">
