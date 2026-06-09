@@ -30,22 +30,28 @@ export default function Dashboard() {
   })
   const [recentInterviews, setRecentInterviews] = useState<any[]>([])
   const [isLoadingStats, setIsLoadingStats] = useState(true)
+  const [strongAreas, setStrongAreas] = useState<{ topic: string, score: number }[]>([])
+  const [weakAreas, setWeakAreas] = useState<{ topic: string, score: number }[]>([])
+  const [recommendedTopic, setRecommendedTopic] = useState<{
+    name: string;
+    type: 'strong' | 'weak' | 'neutral';
+    message: string;
+    difficulty: string;
+  } | null>(null);
 
   useEffect(() => {
     async function fetchData() {
       if (!user) return
       
+      let profile: any = null;
       try {
-        const profile = await getUserProfile(user.uid).catch(() => null)
-        if (profile) {
-          setProfileData({
-            targetRole: profile.targetRole,
-            currentStreak: profile.currentStreak
-          })
-        }
+        profile = await getUserProfile(user.uid).catch(() => null)
       } catch (e) {
         console.error("Failed to fetch profile", e)
       }
+
+      let newStrongAreas: { topic: string, score: number }[] = [];
+      let newWeakAreas: { topic: string, score: number }[] = [];
 
       try {
         const response = await fetch(`/api/interview-sessions/user/${user.uid}`)
@@ -63,13 +69,15 @@ export default function Dashboard() {
               const totalScore = completed.reduce((sum: number, s: any) => sum + (s.overallScore || 0), 0);
               avgScore = Math.round(totalScore / completed.length) / 10;
 
-              const skillSums = {
+              const skillSums: Record<string, number> = {
                 'Technical': 0,
                 'Communication': 0,
                 'Problem Solving': 0,
                 'Confidence': 0,
                 'System Design': 0
               };
+
+              const topicStats: Record<string, { totalScore: number, count: number }> = {};
 
               completed.forEach((s: any) => {
                 if (s.scores) {
@@ -79,6 +87,13 @@ export default function Dashboard() {
                   skillSums['Confidence'] += s.scores.confidence || 0;
                   skillSums['System Design'] += s.scores.systemDesign || 0;
                 }
+
+                const topic = s.keyFocusArea || 'General';
+                if (!topicStats[topic]) {
+                  topicStats[topic] = { totalScore: 0, count: 0 };
+                }
+                topicStats[topic].totalScore += (s.overallScore || 0);
+                topicStats[topic].count += 1;
               });
 
               const skillAverages = Object.entries(skillSums).map(([name, sum]) => ({
@@ -90,6 +105,24 @@ export default function Dashboard() {
               
               wSkill = { name: skillAverages[0].name, score: Math.round(skillAverages[0].score * 10) / 10 };
               bSkill = { name: skillAverages[skillAverages.length - 1].name, score: Math.round(skillAverages[skillAverages.length - 1].score * 10) / 10 };
+
+              // Calculate strong and weak areas
+              const topicAverages = Object.entries(topicStats).map(([topic, stats]) => ({
+                topic,
+                score: Math.round(stats.totalScore / stats.count)
+              }));
+
+              topicAverages.sort((a, b) => b.score - a.score);
+
+              newStrongAreas = topicAverages.filter(t => t.score >= 50).slice(0, 3);
+              const strongTopics = new Set(newStrongAreas.map(t => t.topic));
+              newWeakAreas = topicAverages
+                .filter(t => !strongTopics.has(t.topic))
+                .slice(-3)
+                .sort((a, b) => a.score - b.score);
+
+              setStrongAreas(newStrongAreas);
+              setWeakAreas(newWeakAreas);
             }
 
             setStats({
@@ -106,6 +139,45 @@ export default function Dashboard() {
         console.error("Failed to fetch interview history:", error)
       } finally {
         setIsLoadingStats(false)
+      }
+
+      const userSkills = profile ? [...(profile.technologies || [])] : [];
+      let recommendation = null;
+
+      if (userSkills.length > 0) {
+        const randomSkill = userSkills[Math.floor(Math.random() * userSkills.length)];
+        
+        let type: 'strong' | 'weak' | 'neutral' = 'neutral';
+        let difficulty = 'Medium';
+        let message = `Expand your knowledge in ${randomSkill}. It's a great time to practice and solidify your understanding!`;
+        
+        const isStrong = newStrongAreas.some(area => area.topic.toLowerCase() === randomSkill.toLowerCase());
+        const isWeak = newWeakAreas.some(area => area.topic.toLowerCase() === randomSkill.toLowerCase());
+
+        if (isStrong) {
+          type = 'strong';
+          const difficulties = ['Mixed', 'Medium', 'Hard'];
+          difficulty = difficulties[Math.floor(Math.random() * difficulties.length)];
+          message = `You are doing great in ${randomSkill}. Let's try some advanced questions to push your boundaries!`;
+        } else if (isWeak) {
+          type = 'weak';
+          const difficulties = ['Easy', 'Mixed'];
+          difficulty = difficulties[Math.floor(Math.random() * difficulties.length)];
+          message = `Based on your recent performance, reviewing ${randomSkill} will help boost your overall score. Let's practice!`;
+        }
+
+        recommendation = { name: randomSkill, type, message, difficulty };
+      } else {
+        recommendation = { name: "General Practice", type: 'neutral' as 'strong' | 'weak' | 'neutral', message: "Ready for another session? Let's dive into some general interview questions to keep you sharp.", difficulty: 'Medium' };
+      }
+      
+      setRecommendedTopic(recommendation);
+
+      if (profile) {
+        setProfileData({
+          targetRole: profile.targetRole,
+          currentStreak: profile.currentStreak,
+        })
       }
     }
     fetchData()
@@ -199,39 +271,37 @@ export default function Dashboard() {
               Recommended Practice
             </div>
             <h2 className="text-2xl font-bold">
-              React Performance Optimization
+              {recommendedTopic?.name || "General Practice"}
             </h2>
             <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Zap className="size-3" /> Difficulty: Medium
+                <Zap className="size-3" /> Difficulty: {recommendedTopic?.difficulty || "Medium"}
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="size-3" /> ~20 mins
               </span>
             </div>
-            <div className="mt-4">
-              <p className="mb-2 text-sm font-medium">Focus Areas:</p>
-              <div className="flex flex-wrap gap-2">
-                <span className="rounded-md border bg-background px-2 py-1 text-xs shadow-sm">
-                  Memoization
-                </span>
-                <span className="rounded-md border bg-background px-2 py-1 text-xs shadow-sm">
-                  Rendering
-                </span>
-                <span className="rounded-md border bg-background px-2 py-1 text-xs shadow-sm">
-                  useCallback
-                </span>
+            {recommendedTopic?.name !== "General Practice" && (
+              <div className="mt-4">
+                <p className="mb-2 text-sm font-medium">Focus Area:</p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded-md border bg-background px-2 py-1 text-xs shadow-sm">
+                    {recommendedTopic?.name}
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
             <p className="mt-4 max-w-2xl text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">AI Insight: </span>
-              Based on your last interview, you struggled slightly with
-              explaining when to use useMemo vs useCallback. This session
-              focuses heavily on those concepts.
+              <span className={`font-medium ${
+                recommendedTopic?.type === 'strong' ? 'text-green-500' :
+                recommendedTopic?.type === 'weak' ? 'text-orange-500' :
+                'text-primary'
+              }`}>AI Insight: </span>
+              {recommendedTopic?.message || "Ready for another session? Let's dive into some general interview questions to keep you sharp."}
             </p>
           </div>
           <div className="mt-4 shrink-0 md:mt-0">
-            <Button size="lg" className="w-full md:w-auto">
+            <Button size="lg" className="w-full md:w-auto" onClick={() => navigate("/start-interview")}>
               Start Recommended Session <ArrowRight className="ml-2 size-4" />
             </Button>
           </div>
@@ -244,87 +314,63 @@ export default function Dashboard() {
         <div className="rounded-xl border bg-card p-6 shadow-sm">
           <h3 className="mb-4 text-lg font-semibold">Strong Areas</h3>
           <div className="space-y-4">
-            <div>
-              <div className="mb-1 flex justify-between text-sm">
-                <span className="font-medium">React Fundamentals</span>
-                <span className="text-green-500">92%</span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-                <div className="h-full bg-green-500" style={{ width: "92%" }} />
-              </div>
-            </div>
-            <div>
-              <div className="mb-1 flex justify-between text-sm">
-                <span className="font-medium">Async JavaScript</span>
-                <span className="text-green-500">88%</span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-                <div className="h-full bg-green-500" style={{ width: "88%" }} />
-              </div>
-            </div>
-            <div>
-              <div className="mb-1 flex justify-between text-sm">
-                <span className="font-medium">API Design</span>
-                <span className="text-green-500">85%</span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-                <div className="h-full bg-green-500" style={{ width: "85%" }} />
-              </div>
-            </div>
+            {strongAreas.length > 0 ? (
+              strongAreas.map((area, idx) => (
+                <div key={idx}>
+                  <div className="mb-1 flex justify-between text-sm">
+                    <span className="font-medium">{area.topic}</span>
+                    <span className="text-green-500">{area.score}%</span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+                    <div className="h-full bg-green-500" style={{ width: `${area.score}%` }} />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {isLoadingStats ? "Loading..." : "Complete interviews to see your strong areas."}
+              </p>
+            )}
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">Praise:</span> You
-            consistently demonstrate strong architectural thinking and clean
-            code practices.
-          </p>
+          {strongAreas.length > 0 && (
+            <p className="mt-4 text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">Praise:</span> You
+              are doing great in these topics! Keep it up.
+            </p>
+          )}
         </div>
 
         {/* Weak Areas */}
         <div className="rounded-xl border bg-card p-6 shadow-sm">
           <h3 className="mb-4 text-lg font-semibold">Weak Areas</h3>
           <div className="space-y-4">
-            <div>
-              <div className="mb-1 flex justify-between text-sm">
-                <span className="font-medium">SQL Joins</span>
-                <span className="text-orange-500">45%</span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-                <div
-                  className="h-full bg-orange-500"
-                  style={{ width: "45%" }}
-                />
-              </div>
-            </div>
-            <div>
-              <div className="mb-1 flex justify-between text-sm">
-                <span className="font-medium">System Scalability</span>
-                <span className="text-orange-500">52%</span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-                <div
-                  className="h-full bg-orange-500"
-                  style={{ width: "52%" }}
-                />
-              </div>
-            </div>
-            <div>
-              <div className="mb-1 flex justify-between text-sm">
-                <span className="font-medium">React Reconciliation</span>
-                <span className="text-orange-500">60%</span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-                <div
-                  className="h-full bg-orange-500"
-                  style={{ width: "60%" }}
-                />
-              </div>
-            </div>
+            {weakAreas.length > 0 ? (
+              weakAreas.map((area, idx) => (
+                <div key={idx}>
+                  <div className="mb-1 flex justify-between text-sm">
+                    <span className="font-medium">{area.topic}</span>
+                    <span className="text-orange-500">{area.score}%</span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+                    <div
+                      className="h-full bg-orange-500"
+                      style={{ width: `${area.score}%` }}
+                    />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {isLoadingStats ? "Loading..." : "No weak areas identified yet. Great job!"}
+              </p>
+            )}
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">Guidance:</span>{" "}
-            Review database normalization and complex query structures before
-            your next full-stack interview.
-          </p>
+          {weakAreas.length > 0 && (
+            <p className="mt-4 text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">Guidance:</span>{" "}
+              Review these topics to improve your overall performance.
+            </p>
+          )}
         </div>
       </div>
 
