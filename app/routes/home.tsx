@@ -96,8 +96,8 @@ export default function Home() {
 
       <main className="pt-24 pb-16">
         {/* HERO SECTION */}
-        <section className="container mx-auto px-4 pt-12 pb-24 text-center md:pt-24 md:pb-32">
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+        <section className="container mx-auto px-4 pt-16 pb-24 text-center md:pt-24 md:pb-32">
+          <div className="mb-8 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
             <Sparkles className="h-4 w-4" />
             <span>Next-gen technical interview prep</span>
           </div>
@@ -138,7 +138,7 @@ export default function Home() {
         <section className="container mx-auto px-4 py-12">
           <div className="relative mx-auto max-w-5xl overflow-hidden rounded-2xl border border-border/50 bg-card shadow-2xl">
             <div className="absolute top-0 right-0 left-0 flex h-12 items-center gap-2 border-b border-border/50 bg-muted/50 px-4">
-              <div className="flex gap-1.5">
+              <div className="flex gap-2">
                 <div className="h-3 w-3 rounded-full bg-red-500/80"></div>
                 <div className="h-3 w-3 rounded-full bg-yellow-500/80"></div>
                 <div className="h-3 w-3 rounded-full bg-green-500/80"></div>
@@ -232,7 +232,7 @@ export default function Home() {
               <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
                 <Code className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="mb-3 text-xl font-bold">Upload your resume</h3>
+              <h3 className="mb-4 text-xl font-bold">Upload your resume</h3>
               <p className="text-sm leading-relaxed text-muted-foreground">
                 Our system parses your resume to extract your tech stack,
                 experience level, and projects to tailor the interview to your
@@ -246,7 +246,7 @@ export default function Home() {
               <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10">
                 <MessageSquare className="h-6 w-6 text-blue-500" />
               </div>
-              <h3 className="mb-3 text-xl font-bold">Conduct the interview</h3>
+              <h3 className="mb-4 text-xl font-bold">Conduct the interview</h3>
               <p className="text-sm leading-relaxed text-muted-foreground">
                 Engage in a live, conversational interview focusing on data
                 structures, system design, or domain-specific engineering
@@ -260,7 +260,7 @@ export default function Home() {
               <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/10">
                 <BarChart3 className="h-6 w-6 text-green-500" />
               </div>
-              <h3 className="mb-3 text-xl font-bold">Get detailed analytics</h3>
+              <h3 className="mb-4 text-xl font-bold">Get detailed analytics</h3>
               <p className="text-sm leading-relaxed text-muted-foreground">
                 Receive an exhaustive breakdown of your technical accuracy,
                 communication clarity, and areas for improvement on your
@@ -306,12 +306,12 @@ export default function Home() {
             ].map((type, i) => (
               <div
                 key={i}
-                className="group cursor-pointer rounded-xl border border-border/50 bg-background p-5 transition-colors hover:border-primary/50"
+                className="group cursor-pointer rounded-xl border border-border/50 bg-background p-6 transition-colors hover:border-primary/50"
               >
                 <div className="mb-4 text-muted-foreground transition-colors group-hover:text-primary">
                   {type.icon}
                 </div>
-                <h4 className="mb-1 font-semibold">{type.title}</h4>
+                <h4 className="mb-2 font-semibold">{type.title}</h4>
                 <p className="text-xs text-muted-foreground">{type.desc}</p>
               </div>
             ))}

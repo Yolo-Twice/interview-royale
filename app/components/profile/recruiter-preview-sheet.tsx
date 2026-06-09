@@ -40,7 +40,7 @@ export function RecruiterPreviewSheet({ profile, open, onOpenChange }: Recruiter
           </SheetHeader>
           
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-            <Avatar size="lg" className="size-20 sm:size-24 border-2 border-background shadow-sm">
+            <Avatar className="size-20 sm:size-24 border-2 border-background shadow-sm">
               {profile.photoURL ? (
                 <AvatarImage src={profile.photoURL} alt={profile.displayName} />
               ) : null}

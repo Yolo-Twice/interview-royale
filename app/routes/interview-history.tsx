@@ -73,6 +73,9 @@ const dateFilters: Array<InterviewSession["dateGroup"] | "All"> = [
   "All time",
 ]
 
+const selectClassName =
+  "flex h-8 w-full min-w-0 rounded-3xl border border-input bg-background px-3 text-xs transition-all duration-200 outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+
 function scoreTone(score: number) {
   if (score >= 8) return "text-emerald-600"
   if (score >= 7) return "text-amber-600"
@@ -193,30 +196,30 @@ export default function InterviewHistoryPage() {
   const trend = "+12% this month"
 
   return (
-    <div className="flex flex-1 flex-col gap-6 bg-background p-6 sm:p-8">
-      <section className="flex flex-col gap-4 rounded-2xl border bg-card p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-1 flex-col gap-5 bg-background p-4 sm:p-6">
+      <section className="flex flex-col gap-3 rounded-2xl border bg-card px-4 py-4 shadow-sm ring-1 ring-border/40 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-xl font-semibold tracking-tight">
             Interview History
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-0.5 text-sm text-muted-foreground">
             Review previous interviews and track progress across technical and
             communication skills.
           </p>
         </div>
-        <Button asChild>
-          <Link to="/start-interview">Start New Interview</Link>
+        <Button asChild size="sm" className="shrink-0 transition-all duration-200">
+          <Link to="/start-interview">Start interview</Link>
         </Button>
       </section>
 
-      <section className="rounded-2xl border bg-card p-4 shadow-sm">
-        <div className="grid gap-3 lg:grid-cols-[1.4fr_repeat(4,minmax(0,1fr))]">
+      <section className="rounded-2xl border bg-card px-4 py-3 shadow-sm ring-1 ring-border/40">
+        <div className="grid gap-2 lg:grid-cols-[1.4fr_repeat(4,minmax(0,1fr))]">
           <div className="relative">
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              className="pl-9"
+              className="h-8 pl-8 text-xs"
               placeholder="Search interviews, topics, weak areas..."
             />
           </div>
@@ -226,7 +229,7 @@ export default function InterviewHistoryPage() {
             onChange={(event) =>
               setTypeFilter(event.target.value as InterviewType | "All")
             }
-            className="h-9 rounded-md border bg-background px-3 text-sm ring-primary/30 transition outline-none focus:ring-2"
+            className={selectClassName}
           >
             {interviewTypeFilters.map((option) => (
               <option key={option} value={option}>
@@ -240,7 +243,7 @@ export default function InterviewHistoryPage() {
             onChange={(event) =>
               setDifficultyFilter(event.target.value as Difficulty | "All")
             }
-            className="h-9 rounded-md border bg-background px-3 text-sm ring-primary/30 transition outline-none focus:ring-2"
+            className={selectClassName}
           >
             {difficultyFilters.map((option) => (
               <option key={option} value={option}>
@@ -256,7 +259,7 @@ export default function InterviewHistoryPage() {
                 event.target.value as InterviewSession["dateGroup"] | "All"
               )
             }
-            className="h-9 rounded-md border bg-background px-3 text-sm ring-primary/30 transition outline-none focus:ring-2"
+            className={selectClassName}
           >
             {dateFilters.map((option) => (
               <option key={option} value={option}>
@@ -270,7 +273,7 @@ export default function InterviewHistoryPage() {
             onChange={(event) =>
               setPerformanceFilter(event.target.value as PerformanceTag | "All")
             }
-            className="h-9 rounded-md border bg-background px-3 text-sm ring-primary/30 transition outline-none focus:ring-2"
+            className={selectClassName}
           >
             {performanceFilters.map((option) => (
               <option key={option} value={option}>
@@ -281,43 +284,57 @@ export default function InterviewHistoryPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-xl border bg-card p-4 shadow-sm">
-          <p className="text-xs text-muted-foreground">Total Interviews</p>
-          <p className="mt-2 text-2xl font-semibold">
-            {totalInterviews} Interviews
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <article className="rounded-2xl border bg-card px-4 py-3 shadow-sm ring-1 ring-border/40">
+          <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+            Total
+          </p>
+          <p className="mt-1 text-xl font-semibold tabular-nums">
+            {totalInterviews}
           </p>
         </article>
-        <article className="rounded-xl border bg-card p-4 shadow-sm">
-          <p className="text-xs text-muted-foreground">Average Score</p>
-          <p className="mt-2 text-2xl font-semibold">{averageScore} / 10</p>
+        <article className="rounded-2xl border bg-card px-4 py-3 shadow-sm ring-1 ring-border/40">
+          <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+            Avg score
+          </p>
+          <p className="mt-1 text-xl font-semibold tabular-nums">
+            {averageScore}
+            <span className="text-sm font-normal text-muted-foreground">
+              {" "}
+              / 10
+            </span>
+          </p>
         </article>
-        <article className="rounded-xl border bg-card p-4 shadow-sm">
-          <p className="text-xs text-muted-foreground">Best Domain</p>
-          <p className="mt-2 text-2xl font-semibold">{bestDomain}</p>
+        <article className="rounded-2xl border bg-card px-4 py-3 shadow-sm ring-1 ring-border/40">
+          <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+            Best domain
+          </p>
+          <p className="mt-1 text-xl font-semibold">{bestDomain}</p>
         </article>
-        <article className="rounded-xl border bg-card p-4 shadow-sm">
-          <p className="text-xs text-muted-foreground">Improvement Trend</p>
-          <p className="mt-2 flex items-center gap-1 text-2xl font-semibold text-emerald-600">
-            <TrendingUp className="size-5" />
+        <article className="rounded-2xl border bg-card px-4 py-3 shadow-sm ring-1 ring-border/40">
+          <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+            Trend
+          </p>
+          <p className="mt-1 flex items-center gap-1 text-xl font-semibold text-emerald-600">
+            <TrendingUp className="size-4" />
             {trend}
           </p>
         </article>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
-        <div className="space-y-4">
+      <section className="grid gap-4 xl:grid-cols-[1.6fr_1fr]">
+        <div className="space-y-3">
           {filteredSessions.length === 0 ? (
-            <div className="rounded-xl border border-dashed bg-card p-8 text-center text-sm text-muted-foreground">
+            <div className="rounded-2xl border border-dashed border-muted-foreground/20 bg-card px-6 py-8 text-center text-sm text-muted-foreground">
               No interviews match these filters. Try broadening your search.
             </div>
           ) : (
             filteredSessions.map((session) => (
               <article
                 key={session.id}
-                className="rounded-2xl border bg-card p-5 shadow-sm transition hover:border-primary/40"
+                className="rounded-2xl border bg-card p-4 shadow-sm ring-1 ring-border/40 transition-all duration-200 hover:ring-primary/30"
               >
-                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
                   <span>{session.type}</span>
                   <span>•</span>
                   <span>{session.difficulty}</span>
@@ -327,9 +344,9 @@ export default function InterviewHistoryPage() {
                   <span>{session.duration}</span>
                 </div>
 
-                <h2 className="mt-2 text-lg font-semibold">{session.title}</h2>
+                <h2 className="mt-1.5 text-base font-semibold">{session.title}</h2>
 
-                <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+                <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
                   <p>
                     Technical:{" "}
                     <span
@@ -370,29 +387,29 @@ export default function InterviewHistoryPage() {
                   </p>
                 </div>
 
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap gap-1.5">
                   {session.weakAreas.map((area) => (
                     <span
                       key={area}
-                      className="rounded-full border border-border bg-muted px-2.5 py-1 text-xs text-muted-foreground"
+                      className="rounded-full border border-border bg-muted px-2 py-0.5 text-[11px] text-muted-foreground"
                     >
                       {area}
                     </span>
                   ))}
                 </div>
 
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-2 flex flex-wrap gap-1.5">
                   {session.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-full border border-primary/25 bg-primary/10 px-2.5 py-1 text-xs text-primary"
+                      className="rounded-full border border-primary/25 bg-primary/10 px-2 py-0.5 text-[11px] text-primary"
                     >
                       {tag}
                     </span>
                   ))}
                 </div>
 
-                <div className="mt-5 flex flex-wrap gap-2">
+                <div className="mt-4 flex flex-wrap gap-2">
                   <Button
                     size="sm"
                     asChild
@@ -422,13 +439,15 @@ export default function InterviewHistoryPage() {
           )}
         </div>
 
-        <div className="rounded-2xl border bg-card p-5 shadow-sm">
-          <h3 className="text-sm font-semibold">Detailed History</h3>
-          <div className="mt-4 space-y-3">
+        <div className="rounded-2xl border bg-card p-4 shadow-sm ring-1 ring-border/40">
+          <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            Quick view
+          </h3>
+          <div className="mt-3 space-y-2">
             {filteredSessions.map((session) => (
               <div
                 key={session.id}
-                className="flex items-center justify-between rounded-lg border bg-background px-3 py-2 text-sm"
+                className="flex items-center justify-between rounded-xl border bg-background px-3 py-2 text-xs transition-colors duration-200 hover:bg-muted/40"
               >
                 <div>
                   <p className="font-medium">{session.topic}</p>

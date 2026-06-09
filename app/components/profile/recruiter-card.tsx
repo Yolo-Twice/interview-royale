@@ -25,14 +25,14 @@ export function RecruiterCard({ profile, onViewFullPreview }: RecruiterCardProps
       <div className="h-16 bg-muted/40 w-full" />
       
       <div className="px-6 pb-6 relative">
-        <Avatar size="lg" className="size-16 absolute -top-8 border-4 border-card bg-card shadow-sm">
+        <Avatar className="size-16 absolute -top-8 border-4 border-card bg-card shadow-sm">
           {profile.photoURL ? (
             <AvatarImage src={profile.photoURL} alt={profile.displayName} />
           ) : null}
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
 
-        <div className="mt-10">
+        <div className="pt-12">
           <h3 className="text-lg font-bold leading-tight">
             {profile.displayName || "Candidate Name"}
           </h3>

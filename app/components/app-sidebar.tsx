@@ -37,7 +37,7 @@ export function AppSidebar() {
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                 <Layers className="size-4" />
               </div>
-              <div className="flex flex-col gap-0.5 leading-none">
+              <div className="flex flex-col gap-1 leading-none">
                 <span className="font-semibold">Interview Royale</span>
               </div>
             </SidebarMenuButton>

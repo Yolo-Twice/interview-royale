@@ -189,14 +189,14 @@ export default function ReportBug() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
           <Card>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-6">
               <CardHeader>
                 <CardTitle>Bug Details</CardTitle>
                 <CardDescription>
                   Please provide as much information as possible to help us reproduce and fix the issue.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6 pt-0">
                 <div className="space-y-2">
                   <Label htmlFor="title">Bug Title <span className="text-destructive">*</span></Label>
                   <Input 
@@ -210,7 +210,7 @@ export default function ReportBug() {
                   {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="category">Category <span className="text-destructive">*</span></Label>
                     <select
@@ -261,7 +261,7 @@ export default function ReportBug() {
                   <Textarea 
                     id="stepsToReproduce" 
                     name="stepsToReproduce" 
-                    placeholder="1. Go to...\n2. Click on...\n3. See error..." 
+                    placeholder={"1. Go to...\n2. Click on...\n3. See error..."}
                     rows={3}
                     value={formData.stepsToReproduce}
                     onChange={handleInputChange}
@@ -284,7 +284,7 @@ export default function ReportBug() {
                   )}
                 </div>
 
-                <Collapsible className="border rounded-md mt-6">
+                <Collapsible className="border rounded-md">
                   <CollapsibleTrigger className="flex items-center justify-between w-full p-4 font-medium text-sm hover:bg-muted/50 transition-colors">
                     Technical Information
                     <span className="text-xs text-muted-foreground">(Auto-captured)</span>

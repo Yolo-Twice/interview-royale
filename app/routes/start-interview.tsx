@@ -144,9 +144,9 @@ export default function ConfigureInterviewPage() {
           <Button variant="outline" onClick={() => navigate(-1)}>
             Cancel
           </Button>
-          <Button type="submit" form="configure-interview-form">
-            <Play className="mr-2 size-4" />
-            Start Now
+          <Button type="submit" form="configure-interview-form" className="gap-1.5">
+            <Play className="size-4" />
+            Start now
           </Button>
         </CardFooter>
       </Card>

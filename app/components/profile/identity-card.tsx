@@ -51,7 +51,7 @@ export function IdentityCard({
           className={`relative ${isEditing ? 'cursor-pointer group' : ''}`}
           onClick={handlePhotoClick}
         >
-          <Avatar size="lg" className="size-20 sm:size-24 border-2 border-background shadow-sm">
+          <Avatar className="size-20 sm:size-24 border-2 border-background shadow-sm">
             {profile.photoURL ? (
               <AvatarImage src={profile.photoURL} alt={formData.displayName} />
             ) : null}
