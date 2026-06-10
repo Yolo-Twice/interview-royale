@@ -9,7 +9,7 @@ export default [
   index("routes/home.tsx"),
   route("login", "routes/login.tsx"),
   route("forgot-password", "routes/forgot-password.tsx"),
-  route("interview/:sessionId/summary", "../src/pages/InterviewSummary.jsx"),
+  route("interview/:sessionId/summary", "routes/InterviewSummary.jsx"),
   route("interview", "routes/interview.tsx"),
   route("post-interview", "routes/post-interview.tsx"),
   layout("routes/app-layout.tsx", [
