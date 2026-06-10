@@ -34,9 +34,16 @@ export default function ConfigureInterviewPage() {
 
       try {
         const profile = await getUserProfile(user.uid)
-        const nextOptions = getProfileFocusAreas(profile?.primarySkills, profile?.technologies)
+        const nextOptions = getProfileFocusAreas(
+          profile?.primarySkills,
+          profile?.technologies
+        )
         setFocusOptions(nextOptions)
-        setFocus((current) => (current && nextOptions.includes(current) ? current : nextOptions[0] ?? ""))
+        setFocus((current) =>
+          current && nextOptions.includes(current)
+            ? current
+            : (nextOptions[0] ?? "")
+        )
       } catch (error) {
         console.error("Failed to load profile focus areas:", error)
         setFocusOptions([])
@@ -65,11 +72,16 @@ export default function ConfigureInterviewPage() {
         <CardHeader>
           <CardTitle className="text-2xl">Configure Interview</CardTitle>
           <CardDescription>
-            Customize your AI interview session. Tailor the role, focus areas, and difficulty to match your goals.
+            Customize your AI interview session. Tailor the role, focus areas,
+            and difficulty to match your goals.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form id="configure-interview-form" onSubmit={handleSubmit} className="space-y-6">
+          <form
+            id="configure-interview-form"
+            onSubmit={handleSubmit}
+            className="space-y-6"
+          >
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="role">Job Role</FieldLabel>
@@ -78,7 +90,11 @@ export default function ConfigureInterviewPage() {
                   value={role}
                   onChange={(e) => {
                     setRole(e.target.value)
-                    setFocus((current) => (focusOptions.includes(current) ? current : focusOptions[0] ?? ""))
+                    setFocus((current) =>
+                      focusOptions.includes(current)
+                        ? current
+                        : (focusOptions[0] ?? "")
+                    )
                   }}
                   className="flex h-9 w-full min-w-0 rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-base transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 md:text-sm"
                 >
@@ -89,7 +105,9 @@ export default function ConfigureInterviewPage() {
               <Field>
                 <FieldLabel htmlFor="focus">Key Focus Areas</FieldLabel>
                 {loadingFocusOptions ? (
-                  <p className="text-sm text-muted-foreground">Loading your profile focus areas…</p>
+                  <p className="text-sm text-muted-foreground">
+                    Loading your profile focus areas…
+                  </p>
                 ) : (
                   <>
                     {hasFocusOptions ? (
@@ -113,10 +131,13 @@ export default function ConfigureInterviewPage() {
                           disabled
                           className="flex h-9 w-full min-w-0 rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-base text-muted-foreground transition-[color,box-shadow,background-color] outline-none md:text-sm"
                         >
-                          <option value="">Select focus areas after adding profile skills</option>
+                          <option value="">
+                            Select focus areas after adding profile skills
+                          </option>
                         </select>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Add skills and technologies to your profile to configure interview focus areas.
+                          Add skills and technologies to your profile to
+                          configure interview focus areas.
                         </p>
                       </>
                     )}
@@ -144,7 +165,11 @@ export default function ConfigureInterviewPage() {
           <Button variant="outline" onClick={() => navigate(-1)}>
             Cancel
           </Button>
-          <Button type="submit" form="configure-interview-form" className="gap-1.5">
+          <Button
+            type="submit"
+            form="configure-interview-form"
+            className="gap-1.5"
+          >
             <Play className="size-4" />
             Start now
           </Button>

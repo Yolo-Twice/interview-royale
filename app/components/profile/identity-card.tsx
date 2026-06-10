@@ -1,5 +1,11 @@
 import { useRef } from "react"
-import { MapPin, Calendar, Briefcase, GraduationCap, Camera } from "lucide-react"
+import {
+  MapPin,
+  Calendar,
+  Briefcase,
+  GraduationCap,
+  Camera,
+} from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
@@ -47,29 +53,31 @@ export function IdentityCard({
   return (
     <div className="rounded-xl border bg-card p-6 shadow-sm">
       <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-        <div 
-          className={`relative ${isEditing ? 'cursor-pointer group' : ''}`}
+        <div
+          className={`relative ${isEditing ? "group cursor-pointer" : ""}`}
           onClick={handlePhotoClick}
         >
-          <Avatar className="size-20 sm:size-24 border-2 border-background shadow-sm">
+          <Avatar className="size-20 border-2 border-background shadow-sm sm:size-24">
             {profile.photoURL ? (
               <AvatarImage src={profile.photoURL} alt={formData.displayName} />
             ) : null}
-            <AvatarFallback className="text-xl sm:text-2xl">{initials}</AvatarFallback>
+            <AvatarFallback className="text-xl sm:text-2xl">
+              {initials}
+            </AvatarFallback>
           </Avatar>
-          
+
           {isEditing && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
               <Camera className="size-6 text-white" />
             </div>
           )}
-          
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleFileChange} 
-            accept="image/*" 
-            className="hidden" 
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="image/*"
+            className="hidden"
           />
         </div>
 
@@ -80,7 +88,7 @@ export function IdentityCard({
                 value={formData.displayName}
                 onChange={(e) => onFormChange("displayName", e.target.value)}
                 placeholder="Full Name"
-                className="text-xl font-bold sm:text-2xl h-10 sm:h-12 w-full max-w-sm"
+                className="h-10 w-full max-w-sm text-xl font-bold sm:h-12 sm:text-2xl"
               />
             ) : (
               <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
@@ -90,7 +98,7 @@ export function IdentityCard({
 
             <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
               {isEditing ? (
-                <div className="flex items-center gap-1.5 w-full max-w-sm">
+                <div className="flex w-full max-w-sm items-center gap-1.5">
                   <Briefcase className="size-4 shrink-0 text-muted-foreground/70" />
                   <Input
                     value={formData.targetRole}
@@ -107,7 +115,7 @@ export function IdentityCard({
               )}
 
               {isEditing ? (
-                <div className="flex items-center gap-1.5 w-full max-w-sm">
+                <div className="flex w-full max-w-sm items-center gap-1.5">
                   <GraduationCap className="size-4 shrink-0 text-muted-foreground/70" />
                   <Input
                     value={formData.university}
@@ -125,7 +133,7 @@ export function IdentityCard({
             </div>
           </div>
 
-          <div className="space-y-2 pt-2 border-t border-border/50">
+          <div className="space-y-2 border-t border-border/50 pt-2">
             {isEditing ? (
               <Textarea
                 value={formData.bio}
@@ -134,15 +142,16 @@ export function IdentityCard({
                 className="min-h-[100px] text-sm"
               />
             ) : (
-              <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
-                {formData.bio || "Add a short bio highlighting your experience and goals."}
+              <p className="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
+                {formData.bio ||
+                  "Add a short bio highlighting your experience and goals."}
               </p>
             )}
           </div>
 
           <div className="flex flex-wrap items-center gap-4 pt-2 text-xs text-muted-foreground">
             {isEditing ? (
-              <div className="flex items-center gap-1.5 w-full max-w-xs">
+              <div className="flex w-full max-w-xs items-center gap-1.5">
                 <MapPin className="size-3.5 shrink-0" />
                 <Input
                   value={formData.location}

@@ -66,8 +66,11 @@ export const TECHNOLOGY_OPTIONS = [
   "Tailwind CSS",
 ] as const
 
-export function getProfileFocusAreas(primarySkills: string[] = [], technologies: string[] = []) {
-  return Array.from(new Set([...(primarySkills || []), ...(technologies || [])].filter(Boolean))).sort((a, b) =>
-    a.localeCompare(b)
-  )
+export function getProfileFocusAreas(
+  primarySkills: string[] = [],
+  technologies: string[] = []
+) {
+  return Array.from(
+    new Set([...(primarySkills || []), ...(technologies || [])].filter(Boolean))
+  ).sort((a, b) => a.localeCompare(b))
 }

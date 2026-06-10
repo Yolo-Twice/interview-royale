@@ -13,7 +13,7 @@ export default [
   route("interview", "routes/interview.tsx"),
   route("post-interview", "routes/post-interview.tsx"),
   layout("routes/app-layout.tsx", [
-    route("dashboard", "../src/pages/Dashboard.jsx"),
+    route("dashboard", "routes/dashboard.tsx"),
     route("dashboard/report-bug", "routes/report-bug.tsx"),
     route("start-interview", "routes/start-interview.tsx"),
     route("interview-history", "routes/interview-history.tsx"),

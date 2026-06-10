@@ -33,9 +33,7 @@ export function ProfileHeader({
             </Button>
           </>
         ) : (
-          <Button onClick={onEditToggle}>
-            Edit Profile
-          </Button>
+          <Button onClick={onEditToggle}>Edit Profile</Button>
         )}
       </div>
     </div>

@@ -26,14 +26,17 @@ type AppearanceContextValue = {
   setFontFamily: (fontFamily: FontFamily) => void
 }
 
-const AppearanceContext = createContext<AppearanceContextValue | undefined>(undefined)
+const AppearanceContext = createContext<AppearanceContextValue | undefined>(
+  undefined
+)
 
 type AppearanceProviderProps = {
   children: ReactNode
 }
 
 export function AppearanceProvider({ children }: AppearanceProviderProps) {
-  const [settings, setSettings] = useState<AppearanceSettings>(DEFAULT_APPEARANCE)
+  const [settings, setSettings] =
+    useState<AppearanceSettings>(DEFAULT_APPEARANCE)
 
   useEffect(() => {
     const stored = loadAppearanceSettings()
@@ -84,7 +87,11 @@ export function AppearanceProvider({ children }: AppearanceProviderProps) {
     [settings, setTheme, setFontSize, setFontFamily]
   )
 
-  return <AppearanceContext.Provider value={value}>{children}</AppearanceContext.Provider>
+  return (
+    <AppearanceContext.Provider value={value}>
+      {children}
+    </AppearanceContext.Provider>
+  )
 }
 
 export function useAppearance() {

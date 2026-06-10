@@ -20,7 +20,14 @@ type InterviewType =
   | "Behavioral"
   | "System Design"
   | string
-type Difficulty = "Easy" | "Medium" | "Hard" | "Junior" | "Senior" | "Mid-Level" | string
+type Difficulty =
+  | "Easy"
+  | "Medium"
+  | "Hard"
+  | "Junior"
+  | "Senior"
+  | "Mid-Level"
+  | string
 type PerformanceTag =
   | "High Score"
   | "Weak Areas"
@@ -90,44 +97,59 @@ export default function InterviewHistoryPage() {
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const response = await fetch(`/api/interview-sessions/user/${user?.uid || 'guest'}`)
+        const response = await fetch(
+          `/api/interview-sessions/user/${user?.uid || "guest"}`
+        )
         const data = await response.json()
         if (data.success && data.data) {
-          const mappedSessions: InterviewSession[] = data.data.map((dbSession: any) => {
-            const isCompleted = dbSession.status === 'completed'
-            const overallScore = dbSession.overallScore ? dbSession.overallScore / 10 : 0
-            
-            const date = new Date(dbSession.createdAt || Date.now())
-            const now = new Date()
-            const diffTime = Math.abs(now.getTime() - date.getTime())
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-            let dateGroup: "Last 7 days" | "Last month" | "All time" = "All time"
-            if (diffDays <= 7) dateGroup = "Last 7 days"
-            else if (diffDays <= 30) dateGroup = "Last month"
+          const mappedSessions: InterviewSession[] = data.data.map(
+            (dbSession: any) => {
+              const isCompleted = dbSession.status === "completed"
+              const overallScore = dbSession.overallScore
+                ? dbSession.overallScore / 10
+                : 0
 
-            return {
-              id: dbSession.sessionId,
-              title: `${dbSession.role || 'General'} Interview`,
-              type: dbSession.role || 'General',
-              topic: dbSession.keyFocusArea || 'General',
-              difficulty: dbSession.difficulty || 'Medium',
-              dateLabel: date.toLocaleDateString(),
-              dateGroup,
-              duration: "Completed",
-              score: overallScore,
-              technical: dbSession.scores?.technical ?? overallScore,
-              communication: dbSession.scores?.communication ?? overallScore,
-              confidence: dbSession.scores?.confidence ?? overallScore,
-              weakAreas: dbSession.weaknesses || [],
-              tags: isCompleted ? (overallScore >= 8 ? ["High Score"] : ["Needs Review"]) : ["Incomplete Sessions"],
-              completed: isCompleted,
-              transcript: (dbSession.questionsAnswers || []).flatMap((qa: any) => [
-                { speaker: "AI", line: qa.question },
-                { speaker: "You", line: qa.answer }
-              ]),
-              recommendation: dbSession.summary || "Complete the session to see recommendations."
+              const date = new Date(dbSession.createdAt || Date.now())
+              const now = new Date()
+              const diffTime = Math.abs(now.getTime() - date.getTime())
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+              let dateGroup: "Last 7 days" | "Last month" | "All time" =
+                "All time"
+              if (diffDays <= 7) dateGroup = "Last 7 days"
+              else if (diffDays <= 30) dateGroup = "Last month"
+
+              return {
+                id: dbSession.sessionId,
+                title: `${dbSession.role || "General"} Interview`,
+                type: dbSession.role || "General",
+                topic: dbSession.keyFocusArea || "General",
+                difficulty: dbSession.difficulty || "Medium",
+                dateLabel: date.toLocaleDateString(),
+                dateGroup,
+                duration: "Completed",
+                score: overallScore,
+                technical: dbSession.scores?.technical ?? overallScore,
+                communication: dbSession.scores?.communication ?? overallScore,
+                confidence: dbSession.scores?.confidence ?? overallScore,
+                weakAreas: dbSession.weaknesses || [],
+                tags: isCompleted
+                  ? overallScore >= 8
+                    ? ["High Score"]
+                    : ["Needs Review"]
+                  : ["Incomplete Sessions"],
+                completed: isCompleted,
+                transcript: (dbSession.questionsAnswers || []).flatMap(
+                  (qa: any) => [
+                    { speaker: "AI", line: qa.question },
+                    { speaker: "You", line: qa.answer },
+                  ]
+                ),
+                recommendation:
+                  dbSession.summary ||
+                  "Complete the session to see recommendations.",
+              }
             }
-          })
+          )
           setSessions(mappedSessions)
         }
       } catch (error) {
@@ -163,7 +185,9 @@ export default function InterviewHistoryPage() {
         session.topic.toLowerCase().includes(query) ||
         session.weakAreas.some((area) => area.toLowerCase().includes(query))
 
-      const typeMatch = typeFilter === "All" || session.type.toLowerCase().includes(typeFilter.toLowerCase())
+      const typeMatch =
+        typeFilter === "All" ||
+        session.type.toLowerCase().includes(typeFilter.toLowerCase())
       const difficultyMatch =
         difficultyFilter === "All" || session.difficulty === difficultyFilter
       const performanceMatch =
@@ -178,7 +202,14 @@ export default function InterviewHistoryPage() {
         dateMatch
       )
     })
-  }, [dateFilter, difficultyFilter, performanceFilter, search, typeFilter, sessions])
+  }, [
+    dateFilter,
+    difficultyFilter,
+    performanceFilter,
+    search,
+    typeFilter,
+    sessions,
+  ])
 
   const selectedSession = useMemo(
     () =>
@@ -189,9 +220,13 @@ export default function InterviewHistoryPage() {
 
   const completedSessions = sessions.filter((session) => session.completed)
   const totalInterviews = sessions.length
-  const averageScore = completedSessions.length > 0 
-    ? (completedSessions.reduce((sum, session) => sum + session.score, 0) / completedSessions.length).toFixed(1)
-    : "0.0"
+  const averageScore =
+    completedSessions.length > 0
+      ? (
+          completedSessions.reduce((sum, session) => sum + session.score, 0) /
+          completedSessions.length
+        ).toFixed(1)
+      : "0.0"
   const bestDomain = "Frontend"
   const trend = "+12% this month"
 
@@ -207,7 +242,11 @@ export default function InterviewHistoryPage() {
             communication skills.
           </p>
         </div>
-        <Button asChild size="sm" className="shrink-0 transition-all duration-200">
+        <Button
+          asChild
+          size="sm"
+          className="shrink-0 transition-all duration-200"
+        >
           <Link to="/start-interview">Start interview</Link>
         </Button>
       </section>
@@ -344,7 +383,9 @@ export default function InterviewHistoryPage() {
                   <span>{session.duration}</span>
                 </div>
 
-                <h2 className="mt-1.5 text-base font-semibold">{session.title}</h2>
+                <h2 className="mt-1.5 text-base font-semibold">
+                  {session.title}
+                </h2>
 
                 <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
                   <p>
@@ -410,10 +451,7 @@ export default function InterviewHistoryPage() {
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <Button
-                    size="sm"
-                    asChild
-                  >
+                  <Button size="sm" asChild>
                     <Link to={`/post-interview?sessionId=${session.id}`}>
                       View Report
                     </Link>

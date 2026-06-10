@@ -28,16 +28,32 @@ export function AchievementsSection({ profile }: AchievementsSectionProps) {
       {/* Stats Summary row */}
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <div className="flex flex-col gap-1 rounded-xl border bg-muted/20 p-4">
-          <span className="text-xs text-muted-foreground flex items-center gap-1.5"><Flame className="size-3.5 text-orange-500" /> Current Streak</span>
-          <span className="text-2xl font-bold">{profile.currentStreak} <span className="text-sm font-normal text-muted-foreground">days</span></span>
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Flame className="size-3.5 text-orange-500" /> Current Streak
+          </span>
+          <span className="text-2xl font-bold">
+            {profile.currentStreak}{" "}
+            <span className="text-sm font-normal text-muted-foreground">
+              days
+            </span>
+          </span>
         </div>
         <div className="flex flex-col gap-1 rounded-xl border bg-muted/20 p-4">
-          <span className="text-xs text-muted-foreground flex items-center gap-1.5"><Target className="size-3.5 text-primary" /> Total Interviews</span>
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Target className="size-3.5 text-primary" /> Total Interviews
+          </span>
           <span className="text-2xl font-bold">{profile.totalInterviews}</span>
         </div>
         <div className="flex flex-col gap-1 rounded-xl border bg-muted/20 p-4">
-          <span className="text-xs text-muted-foreground flex items-center gap-1.5"><Trophy className="size-3.5 text-amber-500" /> Longest Streak</span>
-          <span className="text-2xl font-bold">{profile.longestStreak} <span className="text-sm font-normal text-muted-foreground">days</span></span>
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Trophy className="size-3.5 text-amber-500" /> Longest Streak
+          </span>
+          <span className="text-2xl font-bold">
+            {profile.longestStreak}{" "}
+            <span className="text-sm font-normal text-muted-foreground">
+              days
+            </span>
+          </span>
         </div>
       </div>
 
@@ -47,39 +63,46 @@ export function AchievementsSection({ profile }: AchievementsSectionProps) {
           const Icon = IconMap[achievement.icon] || Award
 
           return (
-            <div 
+            <div
               key={achievement.id}
               className={cn(
                 "relative flex flex-col gap-3 rounded-xl border p-4 transition-colors",
-                isEarned 
-                  ? "border-primary/20 bg-primary/5 hover:border-primary/40" 
-                  : "bg-muted/30 border-dashed hover:bg-muted/50"
+                isEarned
+                  ? "border-primary/20 bg-primary/5 hover:border-primary/40"
+                  : "border-dashed bg-muted/30 hover:bg-muted/50"
               )}
             >
               {!isEarned && (
-                <div className="absolute right-3 top-3">
+                <div className="absolute top-3 right-3">
                   <Lock className="size-4 text-muted-foreground/50" />
                 </div>
               )}
-              
-              <div className={cn(
-                "flex size-10 items-center justify-center rounded-full ring-4",
-                isEarned 
-                  ? "bg-primary text-primary-foreground ring-primary/10" 
-                  : "bg-muted text-muted-foreground/50 ring-transparent"
-              )}>
+
+              <div
+                className={cn(
+                  "flex size-10 items-center justify-center rounded-full ring-4",
+                  isEarned
+                    ? "bg-primary text-primary-foreground ring-primary/10"
+                    : "bg-muted text-muted-foreground/50 ring-transparent"
+                )}
+              >
                 <Icon className="size-5" />
               </div>
-              
+
               <div>
-                <h4 className={cn("text-sm font-semibold", !isEarned && "text-muted-foreground")}>
+                <h4
+                  className={cn(
+                    "text-sm font-semibold",
+                    !isEarned && "text-muted-foreground"
+                  )}
+                >
                   {achievement.label}
                 </h4>
-                <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
                   {achievement.description}
                 </p>
                 {isEarned && (
-                  <p className="mt-2 text-[10px] font-medium text-primary uppercase tracking-wider">
+                  <p className="mt-2 text-[10px] font-medium tracking-wider text-primary uppercase">
                     Earned {achievement.earnedAt}
                   </p>
                 )}

@@ -22,7 +22,11 @@ import type { CandidateProfile, ProfileFormData } from "~/lib/profile-types"
 import { getUserDisplayName } from "~/lib/user-display"
 
 // Mock data initialized with the logged-in user details where possible
-const getMockProfile = (displayName: string, email: string | null, defaultPhotoURL: string | null): CandidateProfile => ({
+const getMockProfile = (
+  displayName: string,
+  email: string | null,
+  defaultPhotoURL: string | null
+): CandidateProfile => ({
   displayName: displayName !== "there" ? displayName : "Alex Developer",
   targetRole: "Frontend Engineer",
   university: "University of Technology",
@@ -81,14 +85,18 @@ const getMockProfile = (displayName: string, email: string | null, defaultPhotoU
 export default function ProfilePage() {
   const { user } = useAuth()
   const [loading, setLoading] = useState(true)
-  
+
   const [profile, setProfile] = useState<CandidateProfile>(
-    getMockProfile(getUserDisplayName(user), user?.email ?? null, user?.photoURL ?? null)
+    getMockProfile(
+      getUserDisplayName(user),
+      user?.email ?? null,
+      user?.photoURL ?? null
+    )
   )
-  
+
   const [isEditing, setIsEditing] = useState(false)
   const [showPreviewSheet, setShowPreviewSheet] = useState(false)
-  
+
   // Separate state for the form edits so we can cancel
   const [formData, setFormData] = useState<ProfileFormData>({
     displayName: profile.displayName,
@@ -114,22 +122,34 @@ export default function ProfilePage() {
         if (data) {
           // Remove empty strings from data so it doesn't overwrite defaults
           const cleanData = Object.fromEntries(
-            Object.entries(data).filter(([_, v]) => v !== "" && v !== null && (Array.isArray(v) ? v.length > 0 : true))
-          );
-          
+            Object.entries(data).filter(
+              ([_, v]) =>
+                v !== "" &&
+                v !== null &&
+                (Array.isArray(v) ? v.length > 0 : true)
+            )
+          )
+
           const loadedProfile = {
-            ...getMockProfile(getUserDisplayName(user), user.email, user.photoURL),
+            ...getMockProfile(
+              getUserDisplayName(user),
+              user.email,
+              user.photoURL
+            ),
             ...cleanData,
             // Ensure nested objects aren't lost
-            socialLinks: cleanData.socialLinks || data.socialLinks || { github: "", linkedin: "", portfolio: "" },
+            socialLinks: cleanData.socialLinks ||
+              data.socialLinks || { github: "", linkedin: "", portfolio: "" },
             primarySkills: cleanData.primarySkills || data.primarySkills || [],
             technologies: cleanData.technologies || data.technologies || [],
-            areasOfInterest: cleanData.areasOfInterest || data.areasOfInterest || [],
-            interviewPreferences: cleanData.interviewPreferences || data.interviewPreferences || {
-              domains: ["Frontend"],
-              difficulty: "Medium",
-              aiBehavior: "Neutral",
-            }
+            areasOfInterest:
+              cleanData.areasOfInterest || data.areasOfInterest || [],
+            interviewPreferences: cleanData.interviewPreferences ||
+              data.interviewPreferences || {
+                domains: ["Frontend"],
+                difficulty: "Medium",
+                aiBehavior: "Neutral",
+              },
           }
           setProfile(loadedProfile as any) // Temporary cast to match mock signature if required
           setFormData({
@@ -216,7 +236,9 @@ export default function ProfilePage() {
     const name = file.name.toLowerCase()
     const hasValidExt = allowedExt.some((ext) => name.endsWith(ext))
     if (!hasValidExt) {
-      setUploadError("Invalid file type. Please upload a PDF or Word document (.pdf, .doc, .docx).")
+      setUploadError(
+        "Invalid file type. Please upload a PDF or Word document (.pdf, .doc, .docx)."
+      )
       return
     }
     if (file.size > maxSize) {
@@ -230,7 +252,10 @@ export default function ProfilePage() {
     const apiUserId = (profile as any).userId || user.uid
 
     try {
-      setProfile((prev) => ({ ...prev, resume: { ...(prev.resume || {}), status: "uploading" } as any }))
+      setProfile((prev) => ({
+        ...prev,
+        resume: { ...(prev.resume || {}), status: "uploading" } as any,
+      }))
 
       await uploadResume(apiUserId, file)
 
@@ -242,7 +267,10 @@ export default function ProfilePage() {
     } catch (err: any) {
       console.error("Failed to upload resume:", err)
       setUploadError(err?.message || "Upload failed. Please try again.")
-      setProfile((prev) => ({ ...prev, resume: { ...(prev.resume || {}), status: "none" } as any }))
+      setProfile((prev) => ({
+        ...prev,
+        resume: { ...(prev.resume || {}), status: "none" } as any,
+      }))
     }
   }
 
@@ -257,18 +285,23 @@ export default function ProfilePage() {
 
     try {
       await removeResume(apiUserId)
-      setProfile((prev) => ({
-        ...prev,
-        resume: {
-          status: "none",
-          fileName: null,
-          uploadedAt: null,
-          url: null,
-        },
-      } as any))
+      setProfile(
+        (prev) =>
+          ({
+            ...prev,
+            resume: {
+              status: "none",
+              fileName: null,
+              uploadedAt: null,
+              url: null,
+            },
+          }) as any
+      )
     } catch (err: any) {
       console.error("Failed to remove resume:", err)
-      setUploadError(err?.message || "Could not remove resume. Please try again.")
+      setUploadError(
+        err?.message || "Could not remove resume. Please try again."
+      )
     }
   }
 
@@ -311,7 +344,7 @@ export default function ProfilePage() {
             onFormChange={handleFormChange}
             onPhotoUpload={handlePhotoUpload}
           />
-          
+
           <ProfessionalPresence
             profile={profile}
             formData={formData}
@@ -321,7 +354,7 @@ export default function ProfilePage() {
             onResumeRemove={handleResumeRemove}
             uploadError={uploadError}
           />
-          
+
           <SkillsGrid
             profile={profile}
             formData={formData}
@@ -333,14 +366,14 @@ export default function ProfilePage() {
         {/* Right Sidebar Column */}
         <div className="flex flex-col gap-6">
           {/* We pass the formData to RecruiterCard when editing so the preview updates in real-time */}
-          <RecruiterCard 
-            profile={isEditing ? { ...profile, ...formData } : profile} 
-            onViewFullPreview={() => setShowPreviewSheet(true)} 
+          <RecruiterCard
+            profile={isEditing ? { ...profile, ...formData } : profile}
+            onViewFullPreview={() => setShowPreviewSheet(true)}
           />
         </div>
       </div>
 
-      <RecruiterPreviewSheet 
+      <RecruiterPreviewSheet
         profile={isEditing ? { ...profile, ...formData } : profile}
         open={showPreviewSheet}
         onOpenChange={setShowPreviewSheet}

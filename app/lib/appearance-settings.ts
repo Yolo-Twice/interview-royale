@@ -18,7 +18,8 @@ export const DEFAULT_APPEARANCE: AppearanceSettings = {
 
 export const FONT_FAMILY_STACKS: Record<FontFamily, string> = {
   inter: '"Inter Variable", sans-serif',
-  system: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  system:
+    'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   serif: 'Georgia, "Times New Roman", Times, serif',
   mono: 'ui-monospace, "Cascadia Code", "Segoe UI Mono", monospace',
 }
@@ -32,7 +33,12 @@ export function isFontSize(value: unknown): value is FontSize {
 }
 
 export function isFontFamily(value: unknown): value is FontFamily {
-  return value === "inter" || value === "system" || value === "serif" || value === "mono"
+  return (
+    value === "inter" ||
+    value === "system" ||
+    value === "serif" ||
+    value === "mono"
+  )
 }
 
 export function loadAppearanceSettings(): AppearanceSettings {
@@ -45,7 +51,9 @@ export function loadAppearanceSettings(): AppearanceSettings {
     const parsed = JSON.parse(raw) as Partial<AppearanceSettings>
     return {
       theme: isTheme(parsed.theme) ? parsed.theme : DEFAULT_APPEARANCE.theme,
-      fontSize: isFontSize(parsed.fontSize) ? parsed.fontSize : DEFAULT_APPEARANCE.fontSize,
+      fontSize: isFontSize(parsed.fontSize)
+        ? parsed.fontSize
+        : DEFAULT_APPEARANCE.fontSize,
       fontFamily: isFontFamily(parsed.fontFamily)
         ? parsed.fontFamily
         : DEFAULT_APPEARANCE.fontFamily,

@@ -10,7 +10,11 @@ interface PublicVisibilityProps {
   onToggleVisibility: (isPublic: boolean) => void
 }
 
-export function PublicVisibility({ profile, isEditing, onToggleVisibility }: PublicVisibilityProps) {
+export function PublicVisibility({
+  profile,
+  isEditing,
+  onToggleVisibility,
+}: PublicVisibilityProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -27,10 +31,14 @@ export function PublicVisibility({ profile, isEditing, onToggleVisibility }: Pub
     <div className="rounded-xl border bg-card p-5 shadow-sm">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className={cn(
-            "flex size-8 items-center justify-center rounded-full",
-            profile.isPublic ? "bg-green-500/10 text-green-600" : "bg-muted text-muted-foreground"
-          )}>
+          <div
+            className={cn(
+              "flex size-8 items-center justify-center rounded-full",
+              profile.isPublic
+                ? "bg-green-500/10 text-green-600"
+                : "bg-muted text-muted-foreground"
+            )}
+          >
             <Globe className="size-4" />
           </div>
           <div>
@@ -40,14 +48,14 @@ export function PublicVisibility({ profile, isEditing, onToggleVisibility }: Pub
             </p>
           </div>
         </div>
-        
+
         {/* Toggle Switch UI */}
         <button
           type="button"
           disabled={!isEditing}
           onClick={() => onToggleVisibility(!profile.isPublic)}
           className={cn(
-            "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
+            "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
             profile.isPublic ? "bg-primary" : "bg-input"
           )}
           role="switch"
@@ -65,7 +73,9 @@ export function PublicVisibility({ profile, isEditing, onToggleVisibility }: Pub
 
       {profile.isPublic && (
         <div className="mt-4 animate-in fade-in slide-in-from-top-1">
-          <p className="text-xs font-medium mb-1.5 text-muted-foreground">Shareable Link</p>
+          <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+            Shareable Link
+          </p>
           <div className="flex items-center gap-2 rounded-md border bg-muted/30 px-3 py-2">
             <span className="flex-1 truncate text-xs text-foreground select-all">
               {profile.shareableUrl}
@@ -76,7 +86,11 @@ export function PublicVisibility({ profile, isEditing, onToggleVisibility }: Pub
               onClick={handleCopy}
               className="size-6 shrink-0 text-muted-foreground hover:text-foreground"
             >
-              {copied ? <Check className="size-3 text-green-500" /> : <Copy className="size-3" />}
+              {copied ? (
+                <Check className="size-3 text-green-500" />
+              ) : (
+                <Copy className="size-3" />
+              )}
               <span className="sr-only">{copied ? "Copied" : "Copy URL"}</span>
             </Button>
           </div>

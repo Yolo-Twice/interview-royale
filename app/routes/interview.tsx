@@ -37,7 +37,11 @@ type ChatMessage = {
 export default function LiveInterviewPage() {
   const { user } = useAuth()
   const location = useLocation()
-  const config = location.state as { role?: string; focus?: string; difficulty?: string } | null
+  const config = location.state as {
+    role?: string
+    focus?: string
+    difficulty?: string
+  } | null
 
   const [interviewId, setInterviewId] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -69,24 +73,30 @@ export default function LiveInterviewPage() {
             role: config?.role || "Frontend Developer",
             keyFocusArea: config?.focus || "React",
             difficulty: config?.difficulty || "Mid-Level",
-            userId: user?.uid || "guest"
-          })
+            userId: user?.uid || "guest",
+          }),
         })
         const data = await response.json()
         setInterviewId(data.sessionId)
         sessionStorage.setItem("interviewSessionId", data.sessionId)
-        setMessages([{
-          id: Date.now().toString(),
-          role: "assistant",
-          content: data.firstQuestion || "Welcome! Let's begin the interview."
-        }])
+        setMessages([
+          {
+            id: Date.now().toString(),
+            role: "assistant",
+            content:
+              data.firstQuestion || "Welcome! Let's begin the interview.",
+          },
+        ])
       } catch (error) {
         console.error("Failed to start interview:", error)
-        setMessages([{
-          id: Date.now().toString(),
-          role: "assistant",
-          content: "Sorry, I couldn't connect to the server. Please try again."
-        }])
+        setMessages([
+          {
+            id: Date.now().toString(),
+            role: "assistant",
+            content:
+              "Sorry, I couldn't connect to the server. Please try again.",
+          },
+        ])
       } finally {
         setIsTyping(false)
       }
@@ -192,18 +202,21 @@ export default function LiveInterviewPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           interviewId,
-          answer
-        })
+          answer,
+        }),
       })
       const data = await response.json()
-      
+
       if (data.status === "completed") {
         setIsCompleted(true)
       } else if (data.nextQuestion || data.message) {
         const aiMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content: data.nextQuestion || data.message || "Thank you for your answer. Let's move on.",
+          content:
+            data.nextQuestion ||
+            data.message ||
+            "Thank you for your answer. Let's move on.",
         }
         setMessages((prev) => [...prev, aiMessage])
       }
@@ -212,7 +225,7 @@ export default function LiveInterviewPage() {
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "Sorry, I encountered an error while processing your answer."
+        content: "Sorry, I encountered an error while processing your answer.",
       }
       setMessages((prev) => [...prev, errorMessage])
     } finally {
@@ -222,7 +235,7 @@ export default function LiveInterviewPage() {
 
   const handleEndSession = async () => {
     setIsSubmitting(true)
-    
+
     // Stop recording if active
     if (isRecording) {
       recognitionRef.current?.stop()
@@ -231,20 +244,23 @@ export default function LiveInterviewPage() {
     const steps = [
       "Processing Interview...",
       "Generating Feedback...",
-      "Preparing Report..."
+      "Preparing Report...",
     ]
-    
+
     // Start fake loading progression
     const loadingInterval = setInterval(() => {
-      setLoadingStep(prev => prev < 2 ? prev + 1 : prev)
+      setLoadingStep((prev) => (prev < 2 ? prev + 1 : prev))
     }, 1500)
 
     try {
       const questionsAnswers = []
       for (let i = 0; i < messages.length; i++) {
-        if (messages[i].role === 'assistant') {
+        if (messages[i].role === "assistant") {
           const question = messages[i].content
-          const answer = (i + 1 < messages.length && messages[i+1].role === 'user') ? messages[i+1].content : ""
+          const answer =
+            i + 1 < messages.length && messages[i + 1].role === "user"
+              ? messages[i + 1].content
+              : ""
           if (question && answer) {
             questionsAnswers.push({ question, answer })
           }
@@ -254,7 +270,7 @@ export default function LiveInterviewPage() {
       await fetch(`/api/interview-sessions/${interviewId}/complete`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ questionsAnswers })
+        body: JSON.stringify({ questionsAnswers }),
       })
     } catch (error) {
       console.error("Failed to complete interview:", error)
@@ -282,7 +298,9 @@ export default function LiveInterviewPage() {
           </div>
         )}
 
-        <div className={cn("flex items-center gap-2", !isRecording && "ml-auto")}>
+        <div
+          className={cn("flex items-center gap-2", !isRecording && "ml-auto")}
+        >
           <Dialog open={isEndingSession} onOpenChange={setIsEndingSession}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
@@ -294,14 +312,23 @@ export default function LiveInterviewPage() {
               <DialogHeader>
                 <DialogTitle>End Interview Session?</DialogTitle>
                 <DialogDescription>
-                  Your interview will be submitted and analyzed. You can review the results once processing is complete.
+                  Your interview will be submitted and analyzed. You can review
+                  the results once processing is complete.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter className="mt-4 gap-2 sm:gap-0">
-                <Button variant="ghost" onClick={() => setIsEndingSession(false)} disabled={isSubmitting}>
+                <Button
+                  variant="ghost"
+                  onClick={() => setIsEndingSession(false)}
+                  disabled={isSubmitting}
+                >
                   Continue Interview
                 </Button>
-                <Button onClick={handleEndSession} disabled={isSubmitting} className="w-[140px]">
+                <Button
+                  onClick={handleEndSession}
+                  disabled={isSubmitting}
+                  className="w-[140px]"
+                >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 size-4 animate-spin" />
@@ -384,9 +411,15 @@ export default function LiveInterviewPage() {
         {/* Full-screen Loading Overlay when submitting */}
         {isSubmitting && (
           <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm">
-            <Loader2 className="size-8 animate-spin text-primary mb-4" />
+            <Loader2 className="mb-4 size-8 animate-spin text-primary" />
             <h2 className="text-xl font-semibold tracking-tight">
-              {["Processing Interview...", "Generating Feedback...", "Preparing Report..."][loadingStep]}
+              {
+                [
+                  "Processing Interview...",
+                  "Generating Feedback...",
+                  "Preparing Report...",
+                ][loadingStep]
+              }
             </h2>
           </div>
         )}

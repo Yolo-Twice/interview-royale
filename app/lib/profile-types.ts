@@ -40,8 +40,8 @@ export interface AchievementBadge {
   id: string
   label: string
   description: string
-  earnedAt: string | null   // null = locked
-  icon: string              // lucide icon name
+  earnedAt: string | null // null = locked
+  icon: string // lucide icon name
 }
 
 export interface CandidateProfile {

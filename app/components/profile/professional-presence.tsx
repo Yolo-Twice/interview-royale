@@ -25,7 +25,10 @@ export function ProfessionalPresence({
 }: ProfessionalPresenceProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleSocialChange = (network: keyof ProfileFormData["socialLinks"], value: string) => {
+  const handleSocialChange = (
+    network: keyof ProfileFormData["socialLinks"],
+    value: string
+  ) => {
     onFormChange("socialLinks", {
       ...formData.socialLinks,
       [network]: value,
@@ -48,7 +51,7 @@ export function ProfessionalPresence({
   return (
     <div className="rounded-xl border bg-card p-6 shadow-sm">
       <h3 className="mb-4 text-lg font-semibold">Professional Presence</h3>
-      
+
       <div className="space-y-6">
         {/* Resume Section */}
         <div>
@@ -61,7 +64,7 @@ export function ProfessionalPresence({
                 <UploadCloud className="size-5" />
               )}
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               {profile.resume.status === "uploaded" ? (
                 <>
                   <p className="truncate text-sm font-medium text-foreground">
@@ -95,7 +98,10 @@ export function ProfessionalPresence({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => profile.resume.url && window.open(profile.resume.url, "_blank")}
+                    onClick={() =>
+                      profile.resume.url &&
+                      window.open(profile.resume.url, "_blank")
+                    }
                   >
                     View Resume
                   </Button>
@@ -103,7 +109,11 @@ export function ProfessionalPresence({
                     Replace Resume
                   </Button>
                   {onResumeRemove ? (
-                    <Button variant="destructive" size="sm" onClick={onResumeRemove}>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={onResumeRemove}
+                    >
                       Remove
                     </Button>
                   ) : null}
@@ -127,7 +137,7 @@ export function ProfessionalPresence({
         {/* Social Links */}
         <div className="space-y-3">
           <label className="block text-sm font-medium">External Links</label>
-          
+
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <div className="flex w-24 shrink-0 items-center gap-1.5 text-sm text-muted-foreground">
@@ -144,8 +154,13 @@ export function ProfessionalPresence({
               ) : (
                 <div className="flex-1 text-sm">
                   {formData.socialLinks.github ? (
-                    <a href={formData.socialLinks.github} target="_blank" rel="noreferrer" className="text-primary hover:underline truncate block">
-                      {formData.socialLinks.github.replace(/^https?:\/\//, '')}
+                    <a
+                      href={formData.socialLinks.github}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block truncate text-primary hover:underline"
+                    >
+                      {formData.socialLinks.github.replace(/^https?:\/\//, "")}
                     </a>
                   ) : (
                     <span className="text-muted-foreground">Not provided</span>
@@ -162,15 +177,25 @@ export function ProfessionalPresence({
               {isEditing ? (
                 <Input
                   value={formData.socialLinks.linkedin}
-                  onChange={(e) => handleSocialChange("linkedin", e.target.value)}
+                  onChange={(e) =>
+                    handleSocialChange("linkedin", e.target.value)
+                  }
                   placeholder="https://linkedin.com/in/username"
                   className="h-8"
                 />
               ) : (
                 <div className="flex-1 text-sm">
                   {formData.socialLinks.linkedin ? (
-                    <a href={formData.socialLinks.linkedin} target="_blank" rel="noreferrer" className="text-primary hover:underline truncate block">
-                      {formData.socialLinks.linkedin.replace(/^https?:\/\//, '')}
+                    <a
+                      href={formData.socialLinks.linkedin}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block truncate text-primary hover:underline"
+                    >
+                      {formData.socialLinks.linkedin.replace(
+                        /^https?:\/\//,
+                        ""
+                      )}
                     </a>
                   ) : (
                     <span className="text-muted-foreground">Not provided</span>
@@ -187,15 +212,25 @@ export function ProfessionalPresence({
               {isEditing ? (
                 <Input
                   value={formData.socialLinks.portfolio}
-                  onChange={(e) => handleSocialChange("portfolio", e.target.value)}
+                  onChange={(e) =>
+                    handleSocialChange("portfolio", e.target.value)
+                  }
                   placeholder="https://yourwebsite.com"
                   className="h-8"
                 />
               ) : (
                 <div className="flex-1 text-sm">
                   {formData.socialLinks.portfolio ? (
-                    <a href={formData.socialLinks.portfolio} target="_blank" rel="noreferrer" className="text-primary hover:underline truncate block">
-                      {formData.socialLinks.portfolio.replace(/^https?:\/\//, '')}
+                    <a
+                      href={formData.socialLinks.portfolio}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block truncate text-primary hover:underline"
+                    >
+                      {formData.socialLinks.portfolio.replace(
+                        /^https?:\/\//,
+                        ""
+                      )}
                     </a>
                   ) : (
                     <span className="text-muted-foreground">Not provided</span>
