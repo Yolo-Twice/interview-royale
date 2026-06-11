@@ -14,6 +14,7 @@ export default [
   route("post-interview", "routes/post-interview.tsx"),
   layout("routes/app-layout.tsx", [
     route("dashboard", "routes/dashboard.tsx"),
+    route("dashboard/faq", "routes/faq.tsx"),
     route("dashboard/report-bug", "routes/report-bug.tsx"),
     route("start-interview", "routes/start-interview.tsx"),
     route("interview-history", "routes/interview-history.tsx"),

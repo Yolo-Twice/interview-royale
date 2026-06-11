@@ -5,7 +5,6 @@ import {
   History,
   LayoutDashboard,
   Layers,
-  MonitorPlay,
   Play,
   Target,
   TrendingUp,
@@ -66,12 +65,7 @@ export function AppSidebar() {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <MonitorPlay />
-                  <span>Live Interview</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Link to="/interview-history">
@@ -90,9 +84,11 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <CircleHelp />
-                  <span>FAQs</span>
+                <SidebarMenuButton asChild>
+                  <Link to="/dashboard/faq">
+                    <CircleHelp />
+                    <span>FAQs</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
