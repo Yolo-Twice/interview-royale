@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router"
+import { format } from "date-fns"
 import {
   Activity,
   ArrowRight,
   Award,
+  CalendarIcon,
   ChevronRight,
   Clock,
   Filter,
@@ -22,9 +24,11 @@ import {
 import { Checkbox } from "~/components/ui/checkbox"
 import { Label } from "~/components/ui/label"
 import { Button } from "~/components/ui/button"
+import { Calendar } from "~/components/ui/calendar"
 import { useAuth } from "~/contexts/auth-provider"
 import { getPersonalizedGreeting } from "~/lib/user-display"
 import { getUserProfile } from "~/lib/api/users"
+import { cn } from "~/lib/utils"
 
 import {
   LineChart,
@@ -68,6 +72,7 @@ export default function Dashboard() {
     confidence: true,
     systemDesign: true,
   })
+  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date } | undefined>()
   const [recommendedTopic, setRecommendedTopic] = useState<{
     name: string
     type: "strong" | "weak" | "neutral"
@@ -196,6 +201,7 @@ export default function Dashboard() {
                 .map((s) => {
                   const date = new Date(s.createdAt)
                   return {
+                    rawDate: date,
                     dateLabel: `${String(date.getDate()).padStart(2, "0")} ${date.toLocaleString("en-GB", { month: "short" })}, ${date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`,
                     topic: s.keyFocusArea || "General",
                     technical: s.scores?.technical || 0,
@@ -279,12 +285,33 @@ export default function Dashboard() {
     fetchData()
   }, [user])
 
-  const filteredChartData = chartData.filter((d) => activeTopics.includes(d.topic))
+  const filteredChartData = chartData.filter((d) => {
+    const isTopicActive = activeTopics.includes(d.topic)
+    if (!isTopicActive) return false
+
+    if (dateRange?.from) {
+      const dDate = new Date(d.rawDate)
+      dDate.setHours(0, 0, 0, 0)
+      const fromDate = new Date(dateRange.from)
+      fromDate.setHours(0, 0, 0, 0)
+      if (dDate < fromDate) return false
+    }
+    
+    if (dateRange?.to) {
+      const dDate = new Date(d.rawDate)
+      dDate.setHours(0, 0, 0, 0)
+      const toDate = new Date(dateRange.to)
+      toDate.setHours(0, 0, 0, 0)
+      if (dDate > toDate) return false
+    }
+
+    return true
+  })
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-6 sm:p-8">
       {/* 1. Welcome Banner */}
-      <div className="flex flex-col gap-4 rounded-xl border bg-card p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-xl border bg-card p-6 shadow-sm sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
             {getPersonalizedGreeting(user)}
@@ -295,15 +322,8 @@ export default function Dashboard() {
               {profileData?.targetRole || "Not Set"}
             </span>
           </p>
-          {profileData?.currentStreak !== undefined &&
-            profileData.currentStreak > 0 && (
-              <p className="mt-2 text-sm text-muted-foreground">
-                You are on a {profileData.currentStreak}-day streak! Keep up the
-                momentum to improve your skills.
-              </p>
-            )}
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="flex flex-col gap-3 sm:items-end">
           <Button
             className="w-full sm:w-auto"
             onClick={() => navigate("/start-interview")}
@@ -502,13 +522,51 @@ export default function Dashboard() {
       <div className="rounded-xl border bg-card p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-semibold">Performance Trend</h3>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Filter className="mr-2 size-4" /> Filter
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-56">
+          <div className="flex items-center gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  id="date"
+                  variant={"outline"}
+                  size="sm"
+                  className={cn(
+                    "w-[240px] justify-start text-left font-normal",
+                    !dateRange && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 size-4" />
+                  {dateRange?.from ? (
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, "LLL dd, y")} -{" "}
+                        {format(dateRange.to, "LLL dd, y")}
+                      </>
+                    ) : (
+                      format(dateRange.from, "LLL dd, y")
+                    )
+                  ) : (
+                    <span>Pick a date</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  initialFocus
+                  mode="range"
+                  defaultMonth={dateRange?.from}
+                  selected={dateRange as any}
+                  onSelect={setDateRange as any}
+                  numberOfMonths={2}
+                />
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Filter className="mr-2 size-4" /> Filter
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-56">
               <div className="space-y-4">
                 <h4 className="font-medium leading-none">Chart Metrics</h4>
                 <div className="grid gap-2">
@@ -565,6 +623,7 @@ export default function Dashboard() {
               </div>
             </PopoverContent>
           </Popover>
+          </div>
         </div>
         <div className="mt-4 h-[300px] w-full">
           {filteredChartData.length > 0 ? (
