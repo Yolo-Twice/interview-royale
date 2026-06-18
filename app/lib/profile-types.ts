@@ -60,8 +60,11 @@ export interface CandidateProfile {
 
   // Skills
   primarySkills: string[]
+  skills: string[]
   technologies: string[]
+  tools: string[]
   areasOfInterest: string[]
+  profilePictureUrl: string | null
 
   // Achievements
   currentStreak: number

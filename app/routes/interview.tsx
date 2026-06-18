@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { useNavigate, useLocation } from "react-router"
-import { Mic, MicOff, Send, Bot, User, Loader2, LogOut } from "lucide-react"
+import { Mic, MicOff, Send, Bot, Loader2, LogOut } from "lucide-react"
 
 import { Button } from "~/components/ui/button"
 import {
@@ -23,10 +23,13 @@ import {
   PromptInputActions,
   PromptInputAction,
 } from "~/components/ui/prompt-input"
-import { Message, MessageAvatar, MessageContent } from "~/components/ui/message"
+import { Message, MessageContent } from "~/components/ui/message"
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import { cn } from "~/lib/utils"
 
 import { useAuth } from "~/contexts/auth-provider"
+import { getUserProfile } from "~/lib/api/users"
+import { getUserInitials } from "~/lib/user-display"
 
 type ChatMessage = {
   id: string
@@ -38,8 +41,8 @@ export default function LiveInterviewPage() {
   const { user } = useAuth()
   const location = useLocation()
   const config = location.state as {
-    role?: string
-    focus?: string
+    interviewFocus?: string
+    technology?: string
     difficulty?: string
   } | null
 
@@ -50,13 +53,39 @@ export default function LiveInterviewPage() {
   const [isEndingSession, setIsEndingSession] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loadingStep, setLoadingStep] = useState(0)
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null)
 
   const navigate = useNavigate()
+  const userDisplayName = user?.displayName || user?.email || "User"
 
   const [inputValue, setInputValue] = useState("")
   const [isRecording, setIsRecording] = useState(false)
   const recognitionRef = useRef<any>(null)
   const isStarted = useRef(false)
+
+  useEffect(() => {
+    if (!user) return
+
+    if (user.photoURL) {
+      setProfilePictureUrl(user.photoURL)
+      return
+    }
+
+    let isMounted = true
+
+    void getUserProfile(user.uid)
+      .then((profile) => {
+        if (!isMounted) return
+        setProfilePictureUrl(profile?.profilePictureUrl || profile?.photoURL || null)
+      })
+      .catch((error) => {
+        console.debug("No profile photo available for interview avatar:", error)
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [user])
 
   // Start Interview API call
   useEffect(() => {
@@ -70,8 +99,8 @@ export default function LiveInterviewPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            role: config?.role || "Frontend Developer",
-            keyFocusArea: config?.focus || "React",
+            interviewFocus: config?.interviewFocus || "React",
+            technology: config?.technology || "JavaScript",
             difficulty: config?.difficulty || "Mid-Level",
             userId: user?.uid || "guest",
           }),
@@ -364,9 +393,17 @@ export default function LiveInterviewPage() {
                       <Bot className="size-5" />
                     </div>
                   ) : (
-                    <div className="flex size-8 items-center justify-center rounded-full border bg-muted text-muted-foreground shadow-sm">
-                      <User className="size-5" />
-                    </div>
+                    <Avatar size="default" className="size-8">
+                      {profilePictureUrl ? (
+                        <AvatarImage
+                          src={profilePictureUrl}
+                          alt={userDisplayName}
+                        />
+                      ) : null}
+                      <AvatarFallback className="text-xs">
+                        {getUserInitials(user)}
+                      </AvatarFallback>
+                    </Avatar>
                   )}
                 </div>
                 <MessageContent
