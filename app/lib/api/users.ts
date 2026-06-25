@@ -1,7 +1,20 @@
+import { getFirebaseAuth } from "~/lib/firebase/client"
+
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api"
 
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const auth = getFirebaseAuth()
+  const token = await auth.currentUser?.getIdToken()
+  const headers: Record<string, string> = {}
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`
+  }
+  return headers
+}
+
 export async function getUserProfile(userId: string) {
-  const response = await fetch(`${API_URL}/users/${userId}`)
+  const headers = await getAuthHeaders()
+  const response = await fetch(`${API_URL}/users/${userId}`, { headers })
   if (!response.ok) {
     throw new Error("Failed to fetch user profile")
   }
@@ -9,11 +22,12 @@ export async function getUserProfile(userId: string) {
 }
 
 export async function updateUserProfile(userId: string, data: any) {
+  const headers = await getAuthHeaders()
+  headers["Content-Type"] = "application/json"
+  
   const response = await fetch(`${API_URL}/users/${userId}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify(data),
   })
   if (!response.ok) {
@@ -23,11 +37,13 @@ export async function updateUserProfile(userId: string, data: any) {
 }
 
 export async function uploadPhoto(userId: string, file: File) {
+  const headers = await getAuthHeaders()
   const formData = new FormData()
   formData.append("photo", file)
 
   const response = await fetch(`${API_URL}/users/${userId}/photo`, {
     method: "POST",
+    headers,
     body: formData,
   })
   if (!response.ok) {
@@ -37,12 +53,9 @@ export async function uploadPhoto(userId: string, file: File) {
 }
 
 export async function uploadResume(userId: string, file: File) {
+  const headers = await getAuthHeaders()
   const formData = new FormData()
   formData.append("resume", file)
-
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${userId}`,
-  }
 
   const response = await fetch(`${API_URL}/users/${userId}/resume`, {
     method: "POST",
@@ -57,9 +70,7 @@ export async function uploadResume(userId: string, file: File) {
 }
 
 export async function getResume(userId: string) {
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${userId}`,
-  }
+  const headers = await getAuthHeaders()
 
   const response = await fetch(`${API_URL}/users/${userId}/resume`, {
     method: "GET",
@@ -73,9 +84,7 @@ export async function getResume(userId: string) {
 }
 
 export async function removeResume(userId: string) {
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${userId}`,
-  }
+  const headers = await getAuthHeaders()
 
   const response = await fetch(`${API_URL}/users/${userId}/resume`, {
     method: "DELETE",

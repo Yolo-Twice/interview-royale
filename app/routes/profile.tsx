@@ -34,6 +34,7 @@ const getMockProfile = (
   location: "San Francisco, CA",
   joinDate: "June 2024",
   photoURL: defaultPhotoURL,
+  profilePictureUrl: defaultPhotoURL,
   resume: {
     status: "none",
     fileName: null,
@@ -45,7 +46,9 @@ const getMockProfile = (
     portfolio: "",
   },
   primarySkills: ["React", "TypeScript", "Next.js", "TailwindCSS"],
+  skills: ["React", "TypeScript", "Next.js", "TailwindCSS"],
   technologies: ["Node.js", "GraphQL", "Jest", "Figma", "Docker"],
+  tools: ["Node.js", "GraphQL", "Jest", "Figma", "Docker"],
   areasOfInterest: ["System Design", "WebGL", "Accessibility"],
   currentStreak: 3,
   longestStreak: 12,
@@ -106,7 +109,9 @@ export default function ProfilePage() {
     location: profile.location,
     socialLinks: profile.socialLinks,
     primarySkills: profile.primarySkills,
+    skills: profile.skills || profile.primarySkills,
     technologies: profile.technologies,
+    tools: profile.tools || profile.technologies,
     areasOfInterest: profile.areasOfInterest,
     interviewPreferences: profile.interviewPreferences,
   })
@@ -140,8 +145,14 @@ export default function ProfilePage() {
             // Ensure nested objects aren't lost
             socialLinks: cleanData.socialLinks ||
               data.socialLinks || { github: "", linkedin: "", portfolio: "" },
-            primarySkills: cleanData.primarySkills || data.primarySkills || [],
-            technologies: cleanData.technologies || data.technologies || [],
+            primarySkills:
+              cleanData.primarySkills || data.primarySkills || data.skills || [],
+            skills:
+              cleanData.skills || data.skills || data.primarySkills || [],
+            technologies:
+              cleanData.technologies || data.technologies || data.tools || [],
+            tools:
+              cleanData.tools || data.tools || data.technologies || [],
             areasOfInterest:
               cleanData.areasOfInterest || data.areasOfInterest || [],
             interviewPreferences: cleanData.interviewPreferences ||
@@ -160,7 +171,9 @@ export default function ProfilePage() {
             location: loadedProfile.location || "",
             socialLinks: loadedProfile.socialLinks,
             primarySkills: loadedProfile.primarySkills,
+            skills: loadedProfile.skills,
             technologies: loadedProfile.technologies,
+            tools: loadedProfile.tools,
             areasOfInterest: loadedProfile.areasOfInterest,
             interviewPreferences: loadedProfile.interviewPreferences as any,
           })
@@ -196,7 +209,9 @@ export default function ProfilePage() {
       location: profile.location,
       socialLinks: profile.socialLinks,
       primarySkills: profile.primarySkills,
+      skills: profile.skills || profile.primarySkills,
       technologies: profile.technologies,
+      tools: profile.tools || profile.technologies,
       areasOfInterest: profile.areasOfInterest,
       interviewPreferences: profile.interviewPreferences,
     })
@@ -206,10 +221,21 @@ export default function ProfilePage() {
   const handleSave = async () => {
     if (!user) return
     try {
-      await updateUserProfile(user.uid, formData)
+      const payload = {
+        ...formData,
+        primarySkills: formData.primarySkills,
+        skills: formData.primarySkills,
+        technologies: formData.technologies,
+        tools: formData.technologies,
+      }
+
+      await updateUserProfile(user.uid, payload)
       setProfile((prev) => ({
         ...prev,
         ...formData,
+        skills: formData.primarySkills,
+        tools: formData.technologies,
+        profilePictureUrl: profile.profilePictureUrl || profile.photoURL,
       }))
       setIsEditing(false)
     } catch (err) {

@@ -148,45 +148,12 @@ export default function Home() {
               </div>
             </div>
             <div className="grid gap-8 p-6 pt-16 md:grid-cols-2">
-              <div className="space-y-4 font-mono text-sm">
-                <div className="flex gap-4">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20">
-                    <BrainCircuit className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="rounded-xl rounded-tl-none border border-border/50 bg-muted p-4">
-                    <p className="text-foreground">
-                      Can you explain the difference between processes and
-                      threads in an operating system?
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-row-reverse gap-4">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-500/20">
-                    <Terminal className="h-4 w-4 text-blue-500" />
-                  </div>
-                  <div className="rounded-xl rounded-tr-none border border-blue-500/20 bg-blue-500/10 p-4 text-right">
-                    <p className="text-foreground">
-                      A process is an executing program with its own memory
-                      space, while threads are subsets of a process that share
-                      the same memory space but can execute independently.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20">
-                    <BrainCircuit className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="rounded-xl rounded-tl-none border border-border/50 bg-muted p-4">
-                    <p className="text-foreground">
-                      Good. Since threads share memory, what potential issues
-                      can arise, and how would you handle them in a
-                      multithreaded environment?
-                    </p>
-                    <div className="mt-2 font-sans text-xs text-primary/70 italic">
-                      Generating contextual follow-up...
-                    </div>
-                  </div>
-                </div>
+              <div className="flex items-center justify-center rounded-2xl border border-border/50 bg-muted/30 p-3 shadow-inner">
+                <img
+                  src="/Interview_demo.png"
+                  alt="Interview Royale demo preview"
+                  className="h-auto w-full rounded-xl border border-border/50 bg-background object-contain shadow-sm"
+                />
               </div>
               <div className="hidden flex-col justify-center space-y-6 border-l border-border/50 pl-8 md:flex">
                 <div>

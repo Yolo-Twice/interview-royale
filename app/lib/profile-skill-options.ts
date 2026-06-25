@@ -74,3 +74,20 @@ export function getProfileFocusAreas(
     new Set([...(primarySkills || []), ...(technologies || [])].filter(Boolean))
   ).sort((a, b) => a.localeCompare(b))
 }
+
+export function getProfileSkillOptions(profile: {
+  skills?: string[]
+  primarySkills?: string[]
+  tools?: string[]
+  technologies?: string[]
+} = {}) {
+  return {
+    interviewFocusOptions: getProfileFocusAreas(
+      profile.skills || profile.primarySkills,
+      profile.tools || profile.technologies
+    ),
+    technologyOptions: Array.from(
+      new Set([...(profile.tools || profile.technologies || [])].filter(Boolean))
+    ).sort((a, b) => a.localeCompare(b)),
+  }
+}
