@@ -551,7 +551,6 @@ export default function Dashboard() {
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="end">
                 <Calendar
-                  initialFocus
                   mode="range"
                   defaultMonth={dateRange?.from}
                   selected={dateRange as any}
@@ -781,7 +780,7 @@ export default function Dashboard() {
                         </Button>
                       ) : (
                         <Button variant="ghost" size="sm" asChild>
-                          <Link to={`/interview/${session.sessionId}`}>
+                          <Link to={`/interview?sessionId=${session.sessionId}`}>
                             Continue <ChevronRight className="ml-1 size-3" />
                           </Link>
                         </Button>

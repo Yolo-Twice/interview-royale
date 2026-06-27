@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { useNavigate, useLocation } from "react-router"
+import { useNavigate, useLocation, useSearchParams } from "react-router"
 import { Mic, MicOff, Send, Bot, Loader2, LogOut } from "lucide-react"
 
 import { Button } from "~/components/ui/button"
@@ -45,6 +45,9 @@ export default function LiveInterviewPage() {
     technology?: string
     difficulty?: string
   } | null
+
+  const [searchParams] = useSearchParams()
+  const sessionIdToResume = searchParams.get("sessionId")
 
   const [interviewId, setInterviewId] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -92,32 +95,59 @@ export default function LiveInterviewPage() {
     if (isStarted.current) return
     isStarted.current = true
 
-    const startInterview = async () => {
+    const startOrResumeInterview = async () => {
       setIsTyping(true)
       try {
-        const response = await fetch("/api/interviews/start", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            interviewFocus: config?.interviewFocus || "React",
-            technology: config?.technology || "JavaScript",
-            difficulty: config?.difficulty || "Mid-Level",
-            userId: user?.uid || "guest",
-          }),
-        })
-        const data = await response.json()
-        setInterviewId(data.sessionId)
-        sessionStorage.setItem("interviewSessionId", data.sessionId)
-        setMessages([
-          {
-            id: Date.now().toString(),
-            role: "assistant",
-            content:
-              data.firstQuestion || "Welcome! Let's begin the interview.",
-          },
-        ])
+        if (sessionIdToResume) {
+          const response = await fetch(`/api/interview-sessions/${sessionIdToResume}`)
+          const data = await response.json()
+          if (data.success && data.data) {
+            setInterviewId(data.data.sessionId)
+            sessionStorage.setItem("interviewSessionId", data.data.sessionId)
+            
+            if (data.data.messages && data.data.messages.length > 0) {
+              setMessages(data.data.messages)
+            } else {
+              setMessages([
+                {
+                  id: Date.now().toString(),
+                  role: "assistant",
+                  content: "Welcome back! Let's continue your interview.",
+                },
+              ])
+            }
+            
+            if (data.data.status === "completed") {
+              setIsCompleted(true)
+            }
+          } else {
+            throw new Error("Failed to load session")
+          }
+        } else {
+          const response = await fetch("/api/interviews/start", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              interviewFocus: config?.interviewFocus || "React",
+              technology: config?.technology || "JavaScript",
+              difficulty: config?.difficulty || "Mid-Level",
+              userId: user?.uid || "guest",
+            }),
+          })
+          const data = await response.json()
+          setInterviewId(data.sessionId)
+          sessionStorage.setItem("interviewSessionId", data.sessionId)
+          setMessages([
+            {
+              id: Date.now().toString(),
+              role: "assistant",
+              content:
+                data.firstQuestion || "Welcome! Let's begin the interview.",
+            },
+          ])
+        }
       } catch (error) {
-        console.error("Failed to start interview:", error)
+        console.error("Failed to start/resume interview:", error)
         setMessages([
           {
             id: Date.now().toString(),
@@ -131,8 +161,8 @@ export default function LiveInterviewPage() {
       }
     }
 
-    startInterview()
-  }, [config])
+    startOrResumeInterview()
+  }, [config, sessionIdToResume, user])
 
   // Initialize Speech Recognition
   useEffect(() => {
