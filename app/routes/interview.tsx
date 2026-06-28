@@ -29,12 +29,25 @@ import { cn } from "~/lib/utils"
 
 import { useAuth } from "~/contexts/auth-provider"
 import { getUserProfile } from "~/lib/api/users"
+import {
+  ApiRateLimitError,
+  authenticatedFetch,
+  INTERVIEW_RATE_LIMIT_MESSAGE,
+} from "~/lib/api/api-client"
 import { getUserInitials } from "~/lib/user-display"
 
 type ChatMessage = {
   id: string
   role: "assistant" | "user"
   content: string
+}
+
+function getInterviewErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof ApiRateLimitError) {
+    return INTERVIEW_RATE_LIMIT_MESSAGE
+  }
+
+  return fallback
 }
 
 export default function LiveInterviewPage() {
@@ -73,7 +86,7 @@ export default function LiveInterviewPage() {
 
     let isMounted = true
 
-    void getUserProfile(user.uid)
+    void getUserProfile()
       .then((profile) => {
         if (!isMounted) return
         setProfilePictureUrl(profile?.profilePictureUrl || profile?.photoURL || null)
@@ -89,20 +102,20 @@ export default function LiveInterviewPage() {
 
   // Start Interview API call
   useEffect(() => {
-    if (isStarted.current) return
+    if (isStarted.current || !user) return
     isStarted.current = true
 
     const startInterview = async () => {
       setIsTyping(true)
       try {
-        const response = await fetch("/api/interviews/start", {
+        const response = await authenticatedFetch("/interviews/start", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             interviewFocus: config?.interviewFocus || "React",
             technology: config?.technology || "JavaScript",
             difficulty: config?.difficulty || "Mid-Level",
-            userId: user?.uid || "guest",
+            userId: user.uid,
           }),
         })
         const data = await response.json()
@@ -122,8 +135,10 @@ export default function LiveInterviewPage() {
           {
             id: Date.now().toString(),
             role: "assistant",
-            content:
-              "Sorry, I couldn't connect to the server. Please try again.",
+            content: getInterviewErrorMessage(
+              error,
+              "Sorry, I couldn't connect to the server. Please try again."
+            ),
           },
         ])
       } finally {
@@ -132,7 +147,7 @@ export default function LiveInterviewPage() {
     }
 
     startInterview()
-  }, [config])
+  }, [config, user])
 
   // Initialize Speech Recognition
   useEffect(() => {
@@ -226,7 +241,7 @@ export default function LiveInterviewPage() {
     setIsTyping(true)
 
     try {
-      const response = await fetch("/api/interviews/respond", {
+      const response = await authenticatedFetch("/interviews/respond", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -254,7 +269,10 @@ export default function LiveInterviewPage() {
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "Sorry, I encountered an error while processing your answer.",
+        content: getInterviewErrorMessage(
+          error,
+          "Sorry, I encountered an error while processing your answer."
+        ),
       }
       setMessages((prev) => [...prev, errorMessage])
     } finally {
@@ -281,6 +299,8 @@ export default function LiveInterviewPage() {
       setLoadingStep((prev) => (prev < 2 ? prev + 1 : prev))
     }, 1500)
 
+    let shouldNavigate = true
+
     try {
       const questionsAnswers = []
       for (let i = 0; i < messages.length; i++) {
@@ -296,16 +316,31 @@ export default function LiveInterviewPage() {
         }
       }
 
-      await fetch(`/api/interview-sessions/${interviewId}/complete`, {
+      await authenticatedFetch(`/interview-sessions/${interviewId}/complete`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ questionsAnswers }),
       })
     } catch (error) {
       console.error("Failed to complete interview:", error)
+      if (error instanceof ApiRateLimitError) {
+        shouldNavigate = false
+        setIsEndingSession(false)
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            role: "assistant",
+            content: INTERVIEW_RATE_LIMIT_MESSAGE,
+          },
+        ])
+      }
     } finally {
       clearInterval(loadingInterval)
-      navigate(`/post-interview?sessionId=${interviewId}`)
+      setIsSubmitting(false)
+      if (shouldNavigate) {
+        navigate(`/post-interview?sessionId=${interviewId}`)
+      }
     }
   }
 

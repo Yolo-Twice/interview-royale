@@ -127,6 +127,7 @@ function SummarySkeleton() {
     </div>
   )
 }
+import { authenticatedFetch } from "../lib/api/api-client"
 
 export default function InterviewSummary() {
   const { sessionId } = useParams()
@@ -142,7 +143,7 @@ export default function InterviewSummary() {
       setError(null)
 
       try {
-        const response = await fetch(`/api/session/${sessionId}`)
+        const response = await authenticatedFetch(`/session/${sessionId}`)
 
         if (!response.ok) {
           throw new Error("Failed to load interview summary")

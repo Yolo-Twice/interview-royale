@@ -28,6 +28,7 @@ import { Calendar } from "~/components/ui/calendar"
 import { useAuth } from "~/contexts/auth-provider"
 import { getPersonalizedGreeting } from "~/lib/user-display"
 import { getUserProfile } from "~/lib/api/users"
+import { authenticatedFetch } from "~/lib/api/api-client"
 import { cn } from "~/lib/utils"
 
 import {
@@ -86,7 +87,7 @@ export default function Dashboard() {
 
       let profile: any = null
       try {
-        profile = await getUserProfile(user.uid).catch(() => null)
+        profile = await getUserProfile().catch(() => null)
       } catch (e) {
         console.error("Failed to fetch profile", e)
       }
@@ -95,7 +96,9 @@ export default function Dashboard() {
       let newWeakAreas: { topic: string; score: number }[] = []
 
       try {
-        const response = await fetch(`/api/interview-sessions/user/${user.uid}`)
+        const response = await authenticatedFetch(
+          `/interview-sessions/user/${user.uid}`
+        )
         if (response.ok) {
           const result = await response.json()
           if (result.success && result.data) {

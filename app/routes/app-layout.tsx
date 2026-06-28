@@ -17,7 +17,7 @@ export default function AppLayout() {
     async function fetchProfile() {
       if (user) {
         try {
-          const profile = await getUserProfile(user.uid)
+          const profile = await getUserProfile()
           if (profile) {
             setStreak(profile.currentStreak || 0)
           }

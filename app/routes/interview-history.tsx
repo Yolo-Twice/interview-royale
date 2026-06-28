@@ -4,6 +4,7 @@ import { Link } from "react-router"
 import { useAuth } from "~/contexts/auth-provider"
 
 import { Button } from "~/components/ui/button"
+import { authenticatedFetch } from "~/lib/api/api-client"
 import { Input } from "~/components/ui/input"
 import {
   Sheet,
@@ -96,9 +97,13 @@ export default function InterviewHistoryPage() {
 
   useEffect(() => {
     const fetchSessions = async () => {
+      if (!user) {
+        setIsLoading(false)
+        return
+      }
       try {
-        const response = await fetch(
-          `/api/interview-sessions/user/${user?.uid || "guest"}`
+        const response = await authenticatedFetch(
+          `/interview-sessions/user/${user.uid}`
         )
         const data = await response.json()
         if (data.success && data.data) {

@@ -28,6 +28,7 @@ import {
   AccordionTrigger,
 } from "~/components/ui/accordion"
 import { Skeleton } from "~/components/ui/skeleton"
+import { authenticatedFetch } from "~/lib/api/api-client"
 
 // Type Definitions
 type ScoreTag = "Excellent" | "Good" | "Average" | "Needs Improvement"
@@ -192,7 +193,9 @@ export default function PostInterviewPage() {
       }
 
       try {
-        const response = await fetch(`/api/interview-sessions/${sessionId}`)
+        const response = await authenticatedFetch(
+          `/interview-sessions/${sessionId}`
+        )
         const json = await response.json()
 
         if (json.success && json.data) {

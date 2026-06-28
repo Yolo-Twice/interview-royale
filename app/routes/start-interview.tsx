@@ -35,7 +35,7 @@ export default function ConfigureInterviewPage() {
       }
 
       try {
-        const profile = await getUserProfile(user.uid)
+        const profile = await getUserProfile()
         const { interviewFocusOptions, technologyOptions } =
           getProfileSkillOptions(profile)
 

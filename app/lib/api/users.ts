@@ -1,86 +1,86 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api"
+import {
+  authenticatedFetch,
+  authenticatedJsonFetch,
+  getAuthenticatedUserId,
+} from "~/lib/api/api-client"
 
-export async function getUserProfile(userId: string) {
-  const response = await fetch(`${API_URL}/users/${userId}`)
-  if (!response.ok) {
-    throw new Error("Failed to fetch user profile")
-  }
-  return response.json()
+export async function getUserProfile() {
+  const userId = await getAuthenticatedUserId()
+  return authenticatedJsonFetch(`/users/${userId}`)
 }
 
-export async function updateUserProfile(userId: string, data: any) {
-  const response = await fetch(`${API_URL}/users/${userId}`, {
+export async function updateUserProfile(data: any) {
+  const userId = await getAuthenticatedUserId()
+  const response = await authenticatedFetch(`/users/${userId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(data),
   })
+
   if (!response.ok) {
     throw new Error("Failed to update user profile")
   }
+
   return response.json()
 }
 
-export async function uploadPhoto(userId: string, file: File) {
+export async function uploadPhoto(file: File) {
+  const userId = await getAuthenticatedUserId()
   const formData = new FormData()
   formData.append("photo", file)
 
-  const response = await fetch(`${API_URL}/users/${userId}/photo`, {
+  const response = await authenticatedFetch(`/users/${userId}/photo`, {
     method: "POST",
     body: formData,
   })
+
   if (!response.ok) {
     throw new Error("Failed to upload photo")
   }
+
   return response.json()
 }
 
-export async function uploadResume(userId: string, file: File) {
+export async function uploadResume(file: File) {
+  const userId = await getAuthenticatedUserId()
   const formData = new FormData()
   formData.append("resume", file)
 
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${userId}`,
-  }
-
-  const response = await fetch(`${API_URL}/users/${userId}/resume`, {
+  const response = await authenticatedFetch(`/users/${userId}/resume`, {
     method: "POST",
-    headers,
     body: formData,
   })
+
   if (!response.ok) {
     const text = await response.text().catch(() => null)
     throw new Error(text || "Failed to upload resume")
   }
+
   return response.json()
 }
 
-export async function getResume(userId: string) {
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${userId}`,
-  }
-
-  const response = await fetch(`${API_URL}/users/${userId}/resume`, {
+export async function getResume() {
+  const userId = await getAuthenticatedUserId()
+  const response = await authenticatedFetch(`/users/${userId}/resume`, {
     method: "GET",
-    headers,
   })
+
   if (!response.ok) {
     const text = await response.text().catch(() => null)
     throw new Error(text || "Failed to fetch resume info")
   }
+
   return response.json()
 }
 
-export async function removeResume(userId: string) {
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${userId}`,
-  }
-
-  const response = await fetch(`${API_URL}/users/${userId}/resume`, {
+export async function removeResume() {
+  const userId = await getAuthenticatedUserId()
+  const response = await authenticatedFetch(`/users/${userId}/resume`, {
     method: "DELETE",
-    headers,
   })
+
   if (!response.ok) {
     const text = await response.text().catch(() => null)
     throw new Error(text || "Failed to remove resume")

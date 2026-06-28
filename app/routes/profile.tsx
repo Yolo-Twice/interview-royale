@@ -123,7 +123,7 @@ export default function ProfilePage() {
         return
       }
       try {
-        const data = await getUserProfile(user.uid)
+        const data = await getUserProfile()
         if (data) {
           // Remove empty strings from data so it doesn't overwrite defaults
           const cleanData = Object.fromEntries(
@@ -229,7 +229,7 @@ export default function ProfilePage() {
         tools: formData.technologies,
       }
 
-      await updateUserProfile(user.uid, payload)
+      await updateUserProfile(payload)
       setProfile((prev) => ({
         ...prev,
         ...formData,
@@ -246,7 +246,7 @@ export default function ProfilePage() {
   const handlePhotoUpload = async (file: File) => {
     if (!user) return
     try {
-      const response = await uploadPhoto(user.uid, file)
+      const response = await uploadPhoto(file)
       setProfile((prev) => ({ ...prev, photoURL: response.photoURL }))
     } catch (err) {
       console.error("Failed to upload photo:", err)
@@ -274,19 +274,16 @@ export default function ProfilePage() {
 
     setUploadError(null)
 
-    // Use profile.userId if available, otherwise fallback to Firebase uid
-    const apiUserId = (profile as any).userId || user.uid
-
     try {
       setProfile((prev) => ({
         ...prev,
         resume: { ...(prev.resume || {}), status: "uploading" } as any,
       }))
 
-      await uploadResume(apiUserId, file)
+      await uploadResume(file)
 
       // Refresh resume info from backend
-      const resumeResp = await getResume(apiUserId)
+      const resumeResp = await getResume()
       if (resumeResp && resumeResp.resume) {
         setProfile((prev) => ({ ...prev, resume: resumeResp.resume }))
       }
@@ -307,10 +304,8 @@ export default function ProfilePage() {
     }
 
     setUploadError(null)
-    const apiUserId = (profile as any).userId || user.uid
-
     try {
-      await removeResume(apiUserId)
+      await removeResume()
       setProfile(
         (prev) =>
           ({
@@ -337,9 +332,8 @@ export default function ProfilePage() {
   useEffect(() => {
     async function loadResume() {
       if (!user) return
-      const apiUserId = (profile as any).userId || user.uid
       try {
-        const resumeResp = await getResume(apiUserId)
+        const resumeResp = await getResume()
         if (resumeResp && resumeResp.resume) {
           setProfile((prev) => ({ ...prev, resume: resumeResp.resume }))
         }
