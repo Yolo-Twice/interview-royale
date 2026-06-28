@@ -4,18 +4,30 @@ import {
   getAuthenticatedUserId,
 } from "~/lib/api/api-client"
 
-export async function getUserProfile() {
+export type UserProfile = {
+  profilePictureUrl?: string | null
+  photoURL?: string | null
+
+  skills?: string[]
+  primarySkills?: string[]
+  tools?: string[]
+  technologies?: string[]
+}
+
+const jsonHeaders = {
+  "Content-Type": "application/json",
+}
+
+export async function getUserProfile(): Promise<UserProfile> {
   const userId = await getAuthenticatedUserId()
-  return authenticatedJsonFetch(`/users/${userId}`)
+  return authenticatedJsonFetch<UserProfile>(`/users/${userId}`)
 }
 
 export async function updateUserProfile(data: any) {
   const userId = await getAuthenticatedUserId()
   const response = await authenticatedFetch(`/users/${userId}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: jsonHeaders,
     body: JSON.stringify(data),
   })
 

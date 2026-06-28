@@ -473,9 +473,19 @@ export default function InterviewHistoryPage() {
                       to="/start-interview"
                       className="inline-flex items-center gap-1"
                     >
-                      Resume Practice <ArrowUpRight className="size-4" />
+                      New Practice <ArrowUpRight className="size-4" />
                     </Link>
                   </Button>
+                  {!session.completed && (
+                    <Button variant="default" size="sm" asChild>
+                      <Link
+                        to={`/interview?sessionId=${session.id}`}
+                        className="inline-flex items-center gap-1"
+                      >
+                        Resume Interview <ArrowUpRight className="size-4" />
+                      </Link>
+                    </Button>
+                  )}
                 </div>
               </article>
             ))

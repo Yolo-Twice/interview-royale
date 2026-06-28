@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { useNavigate, useLocation } from "react-router"
+import { useNavigate, useLocation, useSearchParams } from "react-router"
 import { Mic, MicOff, Send, Bot, Loader2, LogOut } from "lucide-react"
 
 import { Button } from "~/components/ui/button"
@@ -59,6 +59,9 @@ export default function LiveInterviewPage() {
     difficulty?: string
   } | null
 
+  const [searchParams] = useSearchParams()
+  const sessionIdToResume = searchParams.get("sessionId")
+
   const [interviewId, setInterviewId] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isCompleted, setIsCompleted] = useState(false)
@@ -105,7 +108,7 @@ export default function LiveInterviewPage() {
     if (isStarted.current || !user) return
     isStarted.current = true
 
-    const startInterview = async () => {
+    const startOrResumeInterview = async () => {
       setIsTyping(true)
       try {
         const response = await authenticatedFetch("/interviews/start", {
@@ -130,7 +133,7 @@ export default function LiveInterviewPage() {
           },
         ])
       } catch (error) {
-        console.error("Failed to start interview:", error)
+        console.error("Failed to start/resume interview:", error)
         setMessages([
           {
             id: Date.now().toString(),
@@ -146,7 +149,7 @@ export default function LiveInterviewPage() {
       }
     }
 
-    startInterview()
+    startOrResumeInterview()
   }, [config, user])
 
   // Initialize Speech Recognition

@@ -1,12 +1,12 @@
 import { useState } from "react"
 import { Plus, X } from "lucide-react"
 import {
-  Combobox,
-  ComboboxContent,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "~/components/ui/combobox"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select"
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
 import {
@@ -43,14 +43,13 @@ export function SkillsGrid({
     setNewSkillInput((prev) => ({ ...prev, [field]: "" }))
   }
 
-  const handleComboboxChange = (
+  const handleSelectChange = (
     field: "primarySkills" | "technologies",
-    nextValue: string[]
+    value: string
   ) => {
-    const normalizedValue = Array.from(
-      new Set((nextValue || []).filter(Boolean))
-    )
-    onFormChange(field, normalizedValue)
+    if (value && !formData[field].includes(value)) {
+      onFormChange(field, [...formData[field], value])
+    }
   }
 
   const handleRemoveSkill = (
@@ -110,34 +109,26 @@ export function SkillsGrid({
 
           {isEditing && field !== "areasOfInterest" && (
             <div className="w-full max-w-[18rem]">
-              <Combobox
-                multiple
-                value={formData[field] as string[]}
+              <Select
+                value=""
                 onValueChange={(value) =>
-                  handleComboboxChange(
+                  handleSelectChange(
                     field as "primarySkills" | "technologies",
-                    value as string[]
+                    value
                   )
                 }
-                items={availableOptions}
               >
-                <ComboboxInput
-                  placeholder={placeholder}
-                  showTrigger
-                  showClear
-                  readOnly
-                  className="h-7 w-full rounded-md px-2 text-xs"
-                />
-                <ComboboxContent>
-                  <ComboboxList>
-                    {availableOptions.map((option) => (
-                      <ComboboxItem key={option} value={option}>
-                        {option}
-                      </ComboboxItem>
-                    ))}
-                  </ComboboxList>
-                </ComboboxContent>
-              </Combobox>
+                <SelectTrigger className="h-7 w-full rounded-md px-2 text-xs">
+                  <SelectValue placeholder={placeholder} />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
