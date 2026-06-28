@@ -33,8 +33,8 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg">
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Layers className="size-4" />
+              <div className="flex aspect-square size-12 items-center justify-center overflow-hidden rounded-lg">
+                <img src="/logo.png" alt="Logo" className="size-full object-cover" />
               </div>
               <div className="flex flex-col gap-1 leading-none">
                 <span className="font-semibold">Interview Royale</span>

@@ -38,7 +38,7 @@ export default function Home() {
               to="/"
               className="flex items-center gap-2 text-xl font-bold tracking-tight"
             >
-              <BrainCircuit className="h-6 w-6 text-primary" />
+              <img src="/logo.png" alt="Interview Royale Logo" className="h-12 w-12 object-contain" />
               <span>Interview Royale</span>
             </Link>
             <div className="hidden items-center gap-6 text-sm font-medium text-muted-foreground md:flex">
@@ -144,7 +144,7 @@ export default function Home() {
                 <div className="h-3 w-3 rounded-full bg-green-500/80"></div>
               </div>
               <div className="mx-auto rounded-md border border-border/50 bg-background/50 px-2 py-1 font-mono text-xs text-muted-foreground">
-                live-interview-session.tsx
+                Live Interview Session
               </div>
             </div>
             <div className="grid gap-8 p-6 pt-16 md:grid-cols-2">
@@ -372,7 +372,7 @@ export default function Home() {
                 to="/"
                 className="mb-4 flex items-center gap-2 text-lg font-bold"
               >
-                <BrainCircuit className="h-5 w-5 text-primary" />
+                <img src="/logo.png" alt="Interview Royale Logo" className="h-6 w-6 object-contain" />
                 <span>Interview Royale</span>
               </Link>
               <p className="mb-4 text-xs text-muted-foreground">
