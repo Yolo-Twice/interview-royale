@@ -111,27 +111,54 @@ export default function LiveInterviewPage() {
     const startOrResumeInterview = async () => {
       setIsTyping(true)
       try {
-        const response = await authenticatedFetch("/interviews/start", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            interviewFocus: config?.interviewFocus || "React",
-            technology: config?.technology || "JavaScript",
-            difficulty: config?.difficulty || "Mid-Level",
-            userId: user.uid,
-          }),
-        })
-        const data = await response.json()
-        setInterviewId(data.sessionId)
-        sessionStorage.setItem("interviewSessionId", data.sessionId)
-        setMessages([
-          {
-            id: Date.now().toString(),
-            role: "assistant",
-            content:
-              data.firstQuestion || "Welcome! Let's begin the interview.",
-          },
-        ])
+        if (sessionIdToResume) {
+          const response = await authenticatedFetch(`/interview-sessions/${sessionIdToResume}`)
+          const data = await response.json()
+          if (data.success && data.data) {
+            setInterviewId(data.data.sessionId)
+            sessionStorage.setItem("interviewSessionId", data.data.sessionId)
+            
+            if (data.data.messages && data.data.messages.length > 0) {
+              setMessages(data.data.messages.map((m: any) => ({
+                id: m.id || Date.now().toString() + Math.random(),
+                role: m.role,
+                content: m.content
+              })))
+            } else {
+              setMessages([
+                {
+                  id: Date.now().toString(),
+                  role: "assistant",
+                  content: "Welcome back! Let's continue the interview.",
+                },
+              ])
+            }
+          } else {
+            throw new Error("Session not found")
+          }
+        } else {
+          const response = await authenticatedFetch("/interviews/start", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              interviewFocus: config?.interviewFocus || "React",
+              technology: config?.technology || "JavaScript",
+              difficulty: config?.difficulty || "Mid-Level",
+              userId: user.uid,
+            }),
+          })
+          const data = await response.json()
+          setInterviewId(data.sessionId)
+          sessionStorage.setItem("interviewSessionId", data.sessionId)
+          setMessages([
+            {
+              id: Date.now().toString(),
+              role: "assistant",
+              content:
+                data.firstQuestion || "Welcome! Let's begin the interview.",
+            },
+          ])
+        }
       } catch (error) {
         console.error("Failed to start/resume interview:", error)
         setMessages([
@@ -239,8 +266,16 @@ export default function LiveInterviewPage() {
       role: "user",
       content: answer,
     }
-    setMessages((prev) => [...prev, userMessage])
+    const newMessages = [...messages, userMessage]
+    setMessages(newMessages)
     setInputValue("")
+
+    const userMessageCount = newMessages.filter((m) => m.role === "user").length
+    if (userMessageCount >= 5) {
+      handleEndSession(newMessages)
+      return
+    }
+
     setIsTyping(true)
 
     try {
@@ -283,7 +318,8 @@ export default function LiveInterviewPage() {
     }
   }
 
-  const handleEndSession = async () => {
+  const handleEndSession = async (overrideMessages?: ChatMessage[] | React.MouseEvent) => {
+    const messagesToProcess = Array.isArray(overrideMessages) ? overrideMessages : messages
     setIsSubmitting(true)
 
     // Stop recording if active
@@ -306,12 +342,12 @@ export default function LiveInterviewPage() {
 
     try {
       const questionsAnswers = []
-      for (let i = 0; i < messages.length; i++) {
-        if (messages[i].role === "assistant") {
-          const question = messages[i].content
+      for (let i = 0; i < messagesToProcess.length; i++) {
+        if (messagesToProcess[i].role === "assistant") {
+          const question = messagesToProcess[i].content
           const answer =
-            i + 1 < messages.length && messages[i + 1].role === "user"
-              ? messages[i + 1].content
+            i + 1 < messagesToProcess.length && messagesToProcess[i + 1].role === "user"
+              ? messagesToProcess[i + 1].content
               : ""
           if (question && answer) {
             questionsAnswers.push({ question, answer })
