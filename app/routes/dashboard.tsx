@@ -523,9 +523,9 @@ export default function Dashboard() {
 
       {/* 5. Performance Trend Chart */}
       <div className="rounded-xl border bg-card p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
           <h3 className="text-lg font-semibold">Performance Trend</h3>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -533,7 +533,7 @@ export default function Dashboard() {
                   variant={"outline"}
                   size="sm"
                   className={cn(
-                    "w-[240px] justify-start text-left font-normal",
+                    "w-full sm:w-[240px] justify-start text-left font-normal",
                     !dateRange && "text-muted-foreground"
                   )}
                 >
@@ -564,7 +564,7 @@ export default function Dashboard() {
             </Popover>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="w-full sm:w-auto">
                   <Filter className="mr-2 size-4" /> Filter
                 </Button>
               </PopoverTrigger>

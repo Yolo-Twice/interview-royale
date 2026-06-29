@@ -1,11 +1,13 @@
 import { useMemo, useState, useEffect } from "react"
-import { ArrowUpRight, Search, Sparkles, TrendingUp } from "lucide-react"
+import { ArrowUpRight, Search, Sparkles, TrendingUp, TrendingDown } from "lucide-react"
 import { Link } from "react-router"
 import { useAuth } from "~/contexts/auth-provider"
 
 import { Button } from "~/components/ui/button"
 import { authenticatedFetch } from "~/lib/api/api-client"
 import { Input } from "~/components/ui/input"
+import { getUserProfile } from "~/lib/api/users"
+import { getProfileSkillOptions } from "~/lib/profile-skill-options"
 import {
   Sheet,
   SheetContent,
@@ -56,11 +58,7 @@ type InterviewSession = {
   recommendation: string
 }
 
-const interviewTypeFilters: Array<InterviewType | "All"> = [
-  "All",
-  "Frontend Developer",
-  "Backend Developer",
-]
+
 const difficultyFilters: Array<Difficulty | "All"> = [
   "All",
   "Junior",
@@ -89,11 +87,29 @@ function scoreTone(score: number) {
   if (score >= 7) return "text-amber-600"
   return "text-muted-foreground"
 }
-
-export default function InterviewHistoryPage() {
+export default function InterviewHistory() {
   const { user } = useAuth()
   const [sessions, setSessions] = useState<InterviewSession[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [topicOptions, setTopicOptions] = useState<string[]>([])
+
+  useEffect(() => {
+    async function loadProfileFocusAreas() {
+      if (!user) {
+        setTopicOptions([])
+        return
+      }
+      try {
+        const profile = await getUserProfile()
+        const { interviewFocusOptions } = getProfileSkillOptions(profile)
+        setTopicOptions(interviewFocusOptions)
+      } catch (error) {
+        console.error("Failed to load profile configuration options:", error)
+        setTopicOptions([])
+      }
+    }
+    void loadProfileFocusAreas()
+  }, [user])
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -167,7 +183,7 @@ export default function InterviewHistoryPage() {
   }, [user])
 
   const [search, setSearch] = useState("")
-  const [typeFilter, setTypeFilter] = useState<InterviewType | "All">("All")
+  const [topicFilter, setTopicFilter] = useState<string>("All")
   const [difficultyFilter, setDifficultyFilter] = useState<Difficulty | "All">(
     "All"
   )
@@ -190,9 +206,9 @@ export default function InterviewHistoryPage() {
         session.topic.toLowerCase().includes(query) ||
         session.weakAreas.some((area) => area.toLowerCase().includes(query))
 
-      const typeMatch =
-        typeFilter === "All" ||
-        session.type.toLowerCase().includes(typeFilter.toLowerCase())
+      const topicMatch =
+        topicFilter === "All" ||
+        session.topic.toLowerCase().includes(topicFilter.toLowerCase())
       const difficultyMatch =
         difficultyFilter === "All" || session.difficulty === difficultyFilter
       const performanceMatch =
@@ -201,7 +217,7 @@ export default function InterviewHistoryPage() {
 
       return (
         searchMatch &&
-        typeMatch &&
+        topicMatch &&
         difficultyMatch &&
         performanceMatch &&
         dateMatch
@@ -212,7 +228,7 @@ export default function InterviewHistoryPage() {
     difficultyFilter,
     performanceFilter,
     search,
-    typeFilter,
+    topicFilter,
     sessions,
   ])
 
@@ -232,8 +248,62 @@ export default function InterviewHistoryPage() {
           completedSessions.length
         ).toFixed(1)
       : "0.0"
-  const bestDomain = "Frontend"
-  const trend = "+12% this month"
+
+  let bestDomain = "--"
+  if (completedSessions.length > 0) {
+    const domainScores: Record<string, { total: number; count: number }> = {}
+    completedSessions.forEach((session) => {
+      const domain = session.topic
+      if (!domainScores[domain]) {
+        domainScores[domain] = { total: 0, count: 0 }
+      }
+      domainScores[domain].total += session.score
+      domainScores[domain].count += 1
+    })
+
+    let highestAvg = -1
+    for (const [domain, stats] of Object.entries(domainScores)) {
+      const avg = stats.total / stats.count
+      if (avg > highestAvg) {
+        highestAvg = avg
+        bestDomain = domain
+      }
+    }
+  }
+
+  let trendText = "--"
+  let trendIsPositive = true
+  if (completedSessions.length > 0) {
+    const recentSessions = completedSessions.filter(
+      (s) => s.dateGroup === "Last 7 days" || s.dateGroup === "Last month"
+    )
+    const olderSessions = completedSessions.filter(
+      (s) => s.dateGroup === "All time"
+    )
+
+    if (recentSessions.length > 0 && olderSessions.length > 0) {
+      const recentAvg =
+        recentSessions.reduce((sum, s) => sum + s.score, 0) /
+        recentSessions.length
+      const olderAvg =
+        olderSessions.reduce((sum, s) => sum + s.score, 0) /
+        olderSessions.length
+
+      const diff = recentAvg - olderAvg
+      const percentChange = olderAvg > 0 ? (diff / olderAvg) * 100 : (diff > 0 ? 100 : 0)
+
+      if (percentChange > 0) {
+        trendText = `+${percentChange.toFixed(0)}% this month`
+        trendIsPositive = true
+      } else if (percentChange < 0) {
+        trendText = `${percentChange.toFixed(0)}% this month`
+        trendIsPositive = false
+      } else {
+        trendText = "0% this month"
+        trendIsPositive = true
+      }
+    }
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-5 bg-background p-4 sm:p-6">
@@ -269,15 +339,14 @@ export default function InterviewHistoryPage() {
           </div>
 
           <select
-            value={typeFilter}
-            onChange={(event) =>
-              setTypeFilter(event.target.value as InterviewType | "All")
-            }
+            value={topicFilter}
+            onChange={(event) => setTopicFilter(event.target.value)}
             className={selectClassName}
           >
-            {interviewTypeFilters.map((option) => (
+            <option value="All">Topic: All</option>
+            {topicOptions.map((option) => (
               <option key={option} value={option}>
-                {option === "All" ? "Role: All" : option}
+                {option}
               </option>
             ))}
           </select>
@@ -359,9 +428,9 @@ export default function InterviewHistoryPage() {
           <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
             Trend
           </p>
-          <p className="mt-1 flex items-center gap-1 text-xl font-semibold text-emerald-600">
-            <TrendingUp className="size-4" />
-            {trend}
+          <p className={`mt-1 flex items-center gap-1 text-xl font-semibold ${trendIsPositive ? "text-emerald-600" : "text-red-600"}`}>
+            {trendIsPositive ? <TrendingUp className="size-4" /> : <TrendingDown className="size-4" />}
+            {trendText}
           </p>
         </article>
       </section>

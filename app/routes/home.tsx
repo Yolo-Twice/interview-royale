@@ -123,14 +123,27 @@ export default function Home() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="h-12 rounded-full px-8 text-base"
-            >
-              <Play className="mr-2 h-5 w-5" />
-              Watch Demo
-            </Button>
+            {isLoggedIn ? (
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="h-12 rounded-full px-8 text-base"
+              >
+                <Link to="/dashboard">
+                  Go to Dashboard
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="lg"
+                className="h-12 rounded-full px-8 text-base"
+              >
+                <Play className="mr-2 h-5 w-5" />
+                Watch Demo
+              </Button>
+            )}
           </div>
         </section>
 
