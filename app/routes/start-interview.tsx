@@ -11,6 +11,7 @@ import {
   CardFooter,
 } from "~/components/ui/card"
 import { Field, FieldLabel, FieldGroup } from "~/components/ui/field"
+import { Slider } from "~/components/ui/slider"
 import { useAuth } from "~/contexts/auth-provider"
 import { getUserProfile } from "~/lib/api/users"
 import { getProfileSkillOptions } from "~/lib/profile-skill-options"
@@ -21,6 +22,7 @@ export default function ConfigureInterviewPage() {
   const [interviewFocus, setInterviewFocus] = useState("")
   const [technology, setTechnology] = useState("")
   const [difficulty, setDifficulty] = useState("Mid-Level")
+  const [numberOfQuestions, setNumberOfQuestions] = useState(5)
   const [interviewFocusOptions, setInterviewFocusOptions] = useState<string[]>([])
   const [technologyOptions, setTechnologyOptions] = useState<string[]>([])
   const [loadingOptions, setLoadingOptions] = useState(true)
@@ -72,7 +74,7 @@ export default function ConfigureInterviewPage() {
     e.preventDefault()
     // Navigate to the live interview and pass configuration via router state
     navigate("/interview", {
-      state: { interviewFocus, technology, difficulty },
+      state: { interviewFocus, technology, difficulty, numberOfQuestions },
     })
   }
 
@@ -188,6 +190,31 @@ export default function ConfigureInterviewPage() {
                   <option value="Senior">Senior</option>
                   <option value="Lead/Staff">Lead / Staff</option>
                 </select>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="numberOfQuestions">
+                  Number of questions
+                </FieldLabel>
+                <div className="space-y-3">
+                  <Slider
+                    id="numberOfQuestions"
+                    min={2}
+                    max={10}
+                    step={1}
+                    value={[numberOfQuestions]}
+                    onValueChange={(value) => {
+                      setNumberOfQuestions(value[0] ?? 5)
+                    }}
+                    className="py-2"
+                  />
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <span>2</span>
+                    <span className="rounded-full bg-primary/10 px-3 py-1 font-medium text-foreground">
+                      {numberOfQuestions} questions
+                    </span>
+                    <span>10</span>
+                  </div>
+                </div>
               </Field>
             </FieldGroup>
           </form>

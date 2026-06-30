@@ -57,6 +57,7 @@ export default function LiveInterviewPage() {
     interviewFocus?: string
     technology?: string
     difficulty?: string
+    numberOfQuestions?: number
   } | null
 
   const [searchParams] = useSearchParams()
@@ -144,6 +145,7 @@ export default function LiveInterviewPage() {
               interviewFocus: config?.interviewFocus || "React",
               technology: config?.technology || "JavaScript",
               difficulty: config?.difficulty || "Mid-Level",
+              numberOfQuestions: config?.numberOfQuestions || 5,
               userId: user.uid,
             }),
           })
@@ -271,7 +273,7 @@ export default function LiveInterviewPage() {
     setInputValue("")
 
     const userMessageCount = newMessages.filter((m) => m.role === "user").length
-    if (userMessageCount >= 5) {
+    if (userMessageCount >= (config?.numberOfQuestions || 5)) {
       handleEndSession(newMessages)
       return
     }
@@ -386,24 +388,37 @@ export default function LiveInterviewPage() {
   return (
     <div className="flex h-screen w-full flex-col bg-background">
       {/* Header */}
-      <header className="flex shrink-0 items-center gap-2 border-b bg-card px-6 py-4 shadow-sm">
-        <Bot className="size-6 text-primary" />
-        <h1 className="text-lg font-semibold tracking-tight">
-          AI Interview Session
-        </h1>
-        {isRecording && (
-          <div className="ml-auto flex animate-pulse items-center gap-2 text-sm font-medium text-destructive">
-            <span className="relative flex size-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75"></span>
-              <span className="relative inline-flex size-2.5 rounded-full bg-destructive"></span>
-            </span>
-            Listening...
+      <header className="flex shrink-0 flex-col gap-4 border-b bg-card px-6 py-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl border border-border/60 bg-background shadow-sm">
+            <img
+              src="/logo.png"
+              alt="Interview Royale"
+              className="h-8 w-8 object-contain"
+            />
           </div>
-        )}
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <span className="inline-flex size-2 rounded-full bg-emerald-500 shadow-[0_0_0_6px_rgba(16,185,129,0.12),0_0_14px_rgba(16,185,129,0.8)]" />
+              <span>Live interview</span>
+            </div>
+            <h1 className="text-lg font-semibold tracking-tight">
+              Interview Royale
+            </h1>
+          </div>
+        </div>
 
-        <div
-          className={cn("flex items-center gap-2", !isRecording && "ml-auto")}
-        >
+        <div className="flex items-center gap-2">
+          {isRecording && (
+            <div className="flex animate-pulse items-center gap-2 text-sm font-medium text-destructive">
+              <span className="relative flex size-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75"></span>
+                <span className="relative inline-flex size-2.5 rounded-full bg-destructive"></span>
+              </span>
+              Listening...
+            </div>
+          )}
+
           <Dialog open={isEndingSession} onOpenChange={setIsEndingSession}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
@@ -430,7 +445,7 @@ export default function LiveInterviewPage() {
                 <Button
                   onClick={handleEndSession}
                   disabled={isSubmitting}
-                  className="w-[140px]"
+                  className="w-35"
                 >
                   {isSubmitting ? (
                     <>
