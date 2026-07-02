@@ -427,12 +427,7 @@ export default function PostInterviewPage() {
                       <p className="pr-4 text-base font-medium text-foreground/90">
                         {q.question}
                       </p>
-                      <Badge
-                        variant="outline"
-                        className={`shrink-0 ${getScoreColor(q.score)}`}
-                      >
-                        {q.score.toFixed(1)}
-                      </Badge>
+                      
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-0 pt-0 pb-6">
@@ -447,37 +442,6 @@ export default function PostInterviewPage() {
           </div>
         </section>
 
-        {/* SECTION 6: Recommended Practice */}
-        <section>
-          <h2 className="text-xl font-semibold tracking-tight">
-            Recommended Practice
-          </h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            {report.recommendations.map((rec) => (
-              <div
-                key={rec.id}
-                className="flex items-center justify-between rounded-xl bg-muted/30 p-5 transition hover:bg-muted/50"
-              >
-                <div>
-                  <h4 className="font-medium">{rec.topic}</h4>
-                  <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-                    <Badge variant="secondary" className="font-normal">
-                      {rec.difficulty}
-                    </Badge>
-                    <span className="flex items-center gap-1">
-                      <Clock className="size-3" /> {rec.estimatedTime}
-                    </span>
-                  </div>
-                </div>
-                <Button size="sm" variant="ghost" asChild>
-                  <a href="/start-interview" className="gap-1">
-                    Start <ChevronRight className="size-4" />
-                  </a>
-                </Button>
-              </div>
-            ))}
-          </div>
-        </section>
 
         {/* SECTION 7: Transcript Preview */}
         <section className="pt-4">
