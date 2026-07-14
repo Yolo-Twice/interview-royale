@@ -17,6 +17,7 @@ import {
   RefreshCw,
   BookOpen,
 } from "lucide-react"
+import ReactMarkdown from "react-markdown"
 
 import { Button } from "~/components/ui/button"
 import { Badge } from "~/components/ui/badge"
@@ -231,16 +232,21 @@ export default function PostInterviewPage() {
               (qa: any, index: number) => ({
                 id: `q${index}`,
                 question: qa.question,
-                score: (data.overallScore || 0) / 10,
-                summary: "Answer submitted",
-                detailedFeedback: qa.answer,
+                score: qa.score ?? ((data.overallScore || 0) / 10),
+                summary: qa.summary ?? "Answer submitted",
+                detailedFeedback: qa.feedback ?? qa.answer,
               })
             ),
             recommendations: [],
-            transcript: (data.questionsAnswers || []).flatMap((qa: any) => [
-              { speaker: "AI", line: qa.question },
-              { speaker: "You", line: qa.answer },
-            ]),
+            transcript: data.messages && data.messages.length > 0
+              ? data.messages.map((msg: any) => ({
+                  speaker: msg.role === "assistant" ? "AI" : "You",
+                  line: msg.content
+                }))
+              : (data.questionsAnswers || []).flatMap((qa: any) => [
+                  { speaker: "AI", line: qa.question },
+                  { speaker: "You", line: qa.answer },
+                ]),
           }
           setReport(formattedReport)
         } else {
@@ -266,7 +272,7 @@ export default function PostInterviewPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background pb-12">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b bg-card px-6 py-4 shadow-sm">
+      <header className="sticky top-0 z-10 border-b bg-card px-6 py-4 shadow-sm print:hidden">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <Button
             variant="ghost"
@@ -278,7 +284,7 @@ export default function PostInterviewPage() {
             Back to Dashboard
           </Button>
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" disabled className="gap-2">
+            <Button variant="outline" size="sm" onClick={() => window.print()} className="gap-2">
               <Download className="size-4" />
               Download Report
             </Button>
@@ -423,17 +429,26 @@ export default function PostInterviewPage() {
                   className="border-b border-border/40 bg-transparent px-0 py-1 shadow-none last:border-b-0 data-open:bg-transparent"
                 >
                   <AccordionTrigger className="border-none px-0 py-4 hover:no-underline">
-                    <div className="flex flex-1 items-center justify-between pr-4 text-left">
-                      <p className="pr-4 text-base font-medium text-foreground/90">
-                        {q.question}
-                      </p>
-                      
+                    <div className="flex flex-1 items-start sm:items-center justify-between gap-4 pr-4 text-left">
+                      <div className="text-base font-medium text-foreground/90 flex-1 [&>p]:m-0">
+                        <ReactMarkdown>{q.question}</ReactMarkdown>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-sm font-semibold tracking-wide">
+                          {q.score}/10
+                        </span>
+                        <div className={`h-2 w-2 rounded-full ${q.score >= 8 ? 'bg-emerald-500' : q.score >= 6 ? 'bg-amber-500' : 'bg-destructive'}`} />
+                      </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-0 pt-0 pb-6">
                     <div className="max-w-3xl space-y-3 text-sm text-muted-foreground">
-                      <p className="font-medium text-foreground">{q.summary}</p>
-                      <p className="leading-relaxed">{q.detailedFeedback}</p>
+                      <div className="font-medium text-foreground [&>p]:m-0">
+                        <ReactMarkdown>{q.summary}</ReactMarkdown>
+                      </div>
+                      <div className="leading-relaxed [&>p]:m-0 space-y-2">
+                        <ReactMarkdown>{q.detailedFeedback}</ReactMarkdown>
+                      </div>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -468,18 +483,17 @@ export default function PostInterviewPage() {
                     <div key={i} className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`text-xs font-semibold tracking-wider uppercase ${
-                            msg.speaker === "AI"
+                          className={`text-xs font-semibold tracking-wider uppercase ${msg.speaker === "AI"
                               ? "text-primary"
                               : "text-foreground/80"
-                          }`}
+                            }`}
                         >
                           {msg.speaker}
                         </span>
                       </div>
-                      <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
-                        {msg.line}
-                      </p>
+                      <div className="max-w-3xl text-sm leading-relaxed text-muted-foreground [&>p]:m-0 space-y-2">
+                        <ReactMarkdown>{msg.line}</ReactMarkdown>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -489,7 +503,7 @@ export default function PostInterviewPage() {
         </section>
 
         {/* SECTION 8: Action Area */}
-        <section className="flex flex-wrap items-center justify-center gap-4 pt-4">
+        <section className="flex flex-wrap items-center justify-center gap-4 pt-4 print:hidden">
           <Button size="lg" className="gap-2 px-8" asChild>
             <a href="/start-interview">
               <RefreshCw className="size-4" />

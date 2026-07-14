@@ -360,7 +360,7 @@ export default function LiveInterviewPage() {
       await authenticatedFetch(`/interview-sessions/${interviewId}/complete`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ questionsAnswers }),
+        body: JSON.stringify({ questionsAnswers, messages: messagesToProcess }),
       })
     } catch (error) {
       console.error("Failed to complete interview:", error)
