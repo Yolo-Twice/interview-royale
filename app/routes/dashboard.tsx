@@ -650,11 +650,12 @@ export default function Dashboard() {
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    borderColor: "hsl(var(--border))",
+                    backgroundColor: "var(--card)",
+                    borderColor: "var(--border)",
                     borderRadius: "8px",
+                    opacity: 0.95,
                   }}
-                  itemStyle={{ color: "hsl(var(--foreground))" }}
+                  itemStyle={{ color: "var(--foreground)" }}
                 />
                 <Legend wrapperStyle={{ fontSize: "12px" }} />
                 {activeMetrics.technical && (
