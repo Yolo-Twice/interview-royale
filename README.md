@@ -65,9 +65,10 @@ npm run start
 ## ✨ Features
 
 - **Interactive Interviews**: Real-time coding and behavioral mock interviews.
-- **Markdown Support**: Rich text rendering with syntax highlighting for code snippets.
 - **Performance Tracking**: Visual charts using Recharts to track your progress over time.
 - **Firebase Integration**: Seamless authentication and database interactions.
+- **Deep Analytics**: Dynamic dashboard presenting recent performance and highlights weak areas.
+- **Markdown Support**: Rich text rendering with syntax highlighting for code snippets.
 
 ## 🎨 UI & Theming
 
