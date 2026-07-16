@@ -6,7 +6,6 @@ import {
   Globe,
   FileText,
   Calendar,
-  Award,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import {
@@ -32,14 +31,12 @@ export function RecruiterPreviewSheet({
 }: RecruiterPreviewSheetProps) {
   const initials = profile.displayName
     ? profile.displayName
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .substring(0, 2)
-        .toUpperCase()
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .substring(0, 2)
+      .toUpperCase()
     : "?"
-
-  const earnedBadges = profile.achievements.filter((a) => a.earnedAt !== null)
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -165,82 +162,9 @@ export function RecruiterPreviewSheet({
                 </p>
               </div>
             </div>
-
-            {earnedBadges.length > 0 && (
-              <div className="mt-4">
-                <h4 className="mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-                  Verified Badges
-                </h4>
-                <div className="flex flex-wrap gap-3">
-                  {earnedBadges.map((badge) => (
-                    <div
-                      key={badge.id}
-                      className="flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5"
-                    >
-                      <Award className="size-4 text-primary" />
-                      <span className="text-xs font-medium text-primary">
-                        {badge.label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </section>
 
-          <section className="rounded-xl bg-muted/40 p-4">
-            <h3 className="mb-3 text-sm font-semibold">Links & Resources</h3>
-            <div className="flex flex-col gap-3">
-              {profile.resume.status === "uploaded" && (
-                <div className="flex items-center gap-2 text-sm">
-                  <FileText className="size-4 text-muted-foreground" />
-                  <span className="font-medium">Resume</span>
-                  <span className="ml-auto text-xs text-muted-foreground">
-                    Verified Upload
-                  </span>
-                </div>
-              )}
-              {profile.socialLinks.github && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Code className="size-4 text-muted-foreground" />
-                  <a
-                    href={profile.socialLinks.github}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    GitHub Profile
-                  </a>
-                </div>
-              )}
-              {profile.socialLinks.linkedin && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Briefcase className="size-4 text-muted-foreground" />
-                  <a
-                    href={profile.socialLinks.linkedin}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    LinkedIn Profile
-                  </a>
-                </div>
-              )}
-              {profile.socialLinks.portfolio && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Globe className="size-4 text-muted-foreground" />
-                  <a
-                    href={profile.socialLinks.portfolio}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    Portfolio Website
-                  </a>
-                </div>
-              )}
-            </div>
-          </section>
+
         </div>
       </SheetContent>
     </Sheet>

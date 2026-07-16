@@ -21,10 +21,6 @@ export function RecruiterCard({
         .toUpperCase()
     : "?"
 
-  const earnedBadgesCount = profile.achievements.filter(
-    (a) => a.earnedAt !== null
-  ).length
-
   return (
     <div className="sticky top-24 overflow-hidden rounded-xl border bg-card shadow-sm">
       <div className="h-16 w-full bg-muted/40" />
@@ -80,14 +76,10 @@ export function RecruiterCard({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 border-t pt-4">
+          <div className="grid grid-cols-1 gap-2 border-t pt-4">
             <div className="rounded-lg bg-muted/30 p-2 text-center">
               <p className="mb-0.5 text-xs text-muted-foreground">Interviews</p>
               <p className="text-lg font-bold">{profile.totalInterviews}</p>
-            </div>
-            <div className="rounded-lg bg-muted/30 p-2 text-center">
-              <p className="mb-0.5 text-xs text-muted-foreground">Badges</p>
-              <p className="text-lg font-bold">{earnedBadgesCount}</p>
             </div>
           </div>
 

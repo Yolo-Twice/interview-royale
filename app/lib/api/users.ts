@@ -4,7 +4,9 @@ import {
   getAuthenticatedUserId,
 } from "~/lib/api/api-client"
 
-export type UserProfile = {
+import type { CandidateProfile } from "~/lib/profile-types"
+
+export type UserProfile = Partial<CandidateProfile> & {
   profilePictureUrl?: string | null
   photoURL?: string | null
 

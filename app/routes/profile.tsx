@@ -14,7 +14,6 @@ import { IdentityCard } from "~/components/profile/identity-card"
 import { ProfessionalPresence } from "~/components/profile/professional-presence"
 import { SkillsGrid } from "~/components/profile/skills-grid"
 import { InterviewPreferencesSection } from "~/components/profile/interview-preferences"
-import { AchievementsSection } from "~/components/profile/achievements-section"
 import { RecruiterCard } from "~/components/profile/recruiter-card"
 import { PublicVisibility } from "~/components/profile/public-visibility"
 import { RecruiterPreviewSheet } from "~/components/profile/recruiter-preview-sheet"
@@ -25,14 +24,15 @@ import { getUserDisplayName } from "~/lib/user-display"
 const getMockProfile = (
   displayName: string,
   email: string | null,
-  defaultPhotoURL: string | null
+  defaultPhotoURL: string | null,
+  joinDate: string
 ): CandidateProfile => ({
   displayName: displayName !== "there" ? displayName : "Alex Developer",
   targetRole: "Frontend Engineer",
   university: "University of Technology",
   bio: "Passionate frontend engineer with 3 years of experience building scalable web applications. Focused on React ecosystem, performance optimization, and creating accessible user interfaces.",
   location: "San Francisco, CA",
-  joinDate: "June 2024",
+  joinDate,
   photoURL: defaultPhotoURL,
   profilePictureUrl: defaultPhotoURL,
   resume: {
@@ -85,15 +85,25 @@ const getMockProfile = (
   },
 })
 
+function formatJoinDate(creationTime?: string): string {
+  if (!creationTime) return "Recently"
+  const date = new Date(creationTime)
+  if (isNaN(date.getTime())) return "Recently"
+  return date.toLocaleDateString("en-US", { month: "long", year: "numeric" })
+}
+
 export default function ProfilePage() {
   const { user } = useAuth()
   const [loading, setLoading] = useState(true)
+
+  const joinDate = formatJoinDate(user?.metadata?.creationTime ?? undefined)
 
   const [profile, setProfile] = useState<CandidateProfile>(
     getMockProfile(
       getUserDisplayName(user),
       user?.email ?? null,
-      user?.photoURL ?? null
+      user?.photoURL ?? null,
+      joinDate
     )
   )
 
@@ -109,9 +119,7 @@ export default function ProfilePage() {
     location: profile.location,
     socialLinks: profile.socialLinks,
     primarySkills: profile.primarySkills,
-    skills: profile.skills || profile.primarySkills,
     technologies: profile.technologies,
-    tools: profile.tools || profile.technologies,
     areasOfInterest: profile.areasOfInterest,
     interviewPreferences: profile.interviewPreferences,
   })
@@ -139,24 +147,25 @@ export default function ProfilePage() {
             ...getMockProfile(
               getUserDisplayName(user),
               user.email,
-              user.photoURL
+              user.photoURL,
+              formatJoinDate(user.metadata?.creationTime ?? undefined)
             ),
             ...cleanData,
             // Ensure nested objects aren't lost
             socialLinks: cleanData.socialLinks ||
-              data.socialLinks || { github: "", linkedin: "", portfolio: "" },
+              (data as any).socialLinks || { github: "", linkedin: "", portfolio: "" },
             primarySkills:
-              cleanData.primarySkills || data.primarySkills || data.skills || [],
+              cleanData.primarySkills || (data as any).primarySkills || (data as any).skills || [],
             skills:
-              cleanData.skills || data.skills || data.primarySkills || [],
+              cleanData.skills || (data as any).skills || (data as any).primarySkills || [],
             technologies:
-              cleanData.technologies || data.technologies || data.tools || [],
+              cleanData.technologies || (data as any).technologies || (data as any).tools || [],
             tools:
-              cleanData.tools || data.tools || data.technologies || [],
+              cleanData.tools || (data as any).tools || (data as any).technologies || [],
             areasOfInterest:
-              cleanData.areasOfInterest || data.areasOfInterest || [],
+              cleanData.areasOfInterest || (data as any).areasOfInterest || [],
             interviewPreferences: cleanData.interviewPreferences ||
-              data.interviewPreferences || {
+              (data as any).interviewPreferences || {
                 domains: ["Frontend"],
                 difficulty: "Medium",
                 aiBehavior: "Neutral",
@@ -170,10 +179,8 @@ export default function ProfilePage() {
             bio: loadedProfile.bio || "",
             location: loadedProfile.location || "",
             socialLinks: loadedProfile.socialLinks,
-            primarySkills: loadedProfile.primarySkills,
-            skills: loadedProfile.skills,
-            technologies: loadedProfile.technologies,
-            tools: loadedProfile.tools,
+            primarySkills: loadedProfile.primarySkills as string[],
+            technologies: loadedProfile.technologies as string[],
             areasOfInterest: loadedProfile.areasOfInterest,
             interviewPreferences: loadedProfile.interviewPreferences as any,
           })
@@ -209,9 +216,7 @@ export default function ProfilePage() {
       location: profile.location,
       socialLinks: profile.socialLinks,
       primarySkills: profile.primarySkills,
-      skills: profile.skills || profile.primarySkills,
       technologies: profile.technologies,
-      tools: profile.tools || profile.technologies,
       areasOfInterest: profile.areasOfInterest,
       interviewPreferences: profile.interviewPreferences,
     })
