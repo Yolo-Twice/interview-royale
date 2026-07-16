@@ -393,11 +393,11 @@ export default function Home() {
                 preparation for modern software engineers.
               </p>
               <div className="flex gap-4 text-muted-foreground">
-                <a href="#" className="transition-colors hover:text-foreground">
-                  Twitter
+                <a href="https://github.com/Yolo-Twice/interview-royale" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-foreground">
+                  Frontend
                 </a>
-                <a href="#" className="transition-colors hover:text-foreground">
-                  GitHub
+                <a href="https://github.com/downhillthursday/interview-royale-backend" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-foreground">
+                  Backend
                 </a>
               </div>
             </div>
