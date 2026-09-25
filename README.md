@@ -1,6 +1,6 @@
-# Interview Buddy
+# Interview Royale
 
-Interview Buddy is an advanced platform designed to help candidates prepare for their technical and behavioral interviews. Built with a modern React stack, it offers a fast, interactive, and responsive experience for users to practice, review, and track their interview history.
+Interview Royale is an advanced platform designed to help candidates prepare for their technical and behavioral interviews. Built with a modern React stack, it offers a fast, interactive, and responsive experience for users to practice, review, and track their interview history.
 
 ## 🚀 Tech Stack
 
